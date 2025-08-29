@@ -1,6 +1,7 @@
 'use client';
 
-import { useActionState, useState } from 'react';
+import { useActionState, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { signup } from '@/app/signup/actions';
 import { ChevronDownIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -10,8 +11,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import { toast } from 'sonner';
 
 export default function SignupForm() {
+  const router = useRouter();
+  
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
@@ -19,8 +23,15 @@ export default function SignupForm() {
   const [phoneNo, setPhoneNo] = useState('');
   const [dob, setDob] = useState<Date | undefined>(new Date())
   const [isLoading, setIsLoading] = useState(false);
-  const [state, formAction, pending] = useActionState(signup, null);
+  const [state, formAction, pending] = useActionState(signup, { success: false, errors: {}, message: '' });
   const [openCalendar, setOpenCalendar] = useState(false);
+
+  useEffect(() => {
+    if (state?.success) {
+      toast.success(state.message);
+      router.push('/login');
+    }
+  }, [state]);
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -43,8 +54,8 @@ export default function SignupForm() {
               placeholder="Enter your name"
               disabled={isLoading}
             />
-            {state?.error?.name && (
-              <p className="text-red-500">{state.error.name}</p>
+            {state?.errors?.name && (
+              <p className="text-red-500">{state.errors.name}</p>
             )}
           </div>
 
@@ -62,8 +73,8 @@ export default function SignupForm() {
               placeholder="Enter your email"
               disabled={isLoading}
             />
-            {state?.error?.email && (
-              <p className='text-red-500'>{state.error.email}</p>
+            {state?.errors?.email && (
+              <p className='text-red-500'>{state.errors.email}</p>
             )}
           </div>
 
@@ -82,8 +93,8 @@ export default function SignupForm() {
               placeholder="Enter your password"
               disabled={isLoading}
             />
-            {state?.error?.password && (
-              <p className='text-red-500'>{state.error.password}</p>
+            {state?.errors?.password && (
+              <p className='text-red-500'>{state.errors.password}</p>
             )}
           </div>
 
@@ -101,8 +112,8 @@ export default function SignupForm() {
               placeholder="Enter your address"
               disabled={isLoading}
             />
-            {state?.error?.address && (
-              <p className='text-red-500'>{state.error.address}</p>
+            {state?.errors?.address && (
+              <p className='text-red-500'>{state.errors.address}</p>
             )}
           </div>
 
@@ -120,8 +131,8 @@ export default function SignupForm() {
               placeholder="e.g., +639123456789 or 09123456789"
               disabled={isLoading}
             />
-            {state?.error?.phoneNo && (
-              <p className='text-red-500'>{state.error.phoneNo}</p>
+            {state?.errors?.phoneNo && (
+              <p className='text-red-500'>{state.errors.phoneNo}</p>
             )}
           </div>
 
@@ -159,8 +170,8 @@ export default function SignupForm() {
                 value={dob ? dob.toISOString().split('T')[0] : ''}
               />
             </div>
-            {state?.error?.dob && (
-              <p className='text-red-500'>{state.error.dob}</p>
+            {state?.errors?.dob && (
+              <p className='text-red-500'>{state.errors.dob}</p>
             )}
           </div>
 

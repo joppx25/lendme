@@ -25,6 +25,7 @@ model User {
   status    Status @default(ACTIVE)
   role      Role   @default(GUEST)
   password  String
+  salt      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

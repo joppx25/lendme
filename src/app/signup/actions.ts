@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { Status, Role } from "@/generated/prisma";
 import { z } from "zod";
+import { generateSalt, hashPassword } from "@/app/auth/core/hasher";
+import { revalidatePath } from "next/cache";
 
 const signupSchema = z.object({
     email: z.string('Email is required').email('Invalid email format'),
@@ -21,6 +23,8 @@ const signupSchema = z.object({
 })
 
 export async function signup(state: any,formData: FormData) {
+
+    try {
     const validatedField = signupSchema.safeParse({
         email: formData.get('email'),
         password: formData.get('password'),
@@ -32,27 +36,62 @@ export async function signup(state: any,formData: FormData) {
 
     if (!validatedField.success) {
         return {
-            error: validatedField.error.flatten().fieldErrors,
+            success: false,
+            errors: validatedField.error.flatten().fieldErrors,
         }
     }
 
     const { email, password, name, dob, phoneNo, address } = validatedField.data;
 
+    const existingUser = await prisma.user.findUnique({
+        where: {
+            email,
+        }
+    })
+
+    console.log('existingUser', existingUser);
+
+    if (existingUser) {
+        return {
+            success: false,
+            errors: {
+                email: "Email already exists",
+            }
+        }
+    }
+
+    const salt = generateSalt();
+    const hashedPassword = hashPassword(password, salt);
+
     const user = await prisma.user.create({
         data: {
             email,
-            password,
+            password: hashedPassword,
             name,
             dob,
             phoneNo,
             address,
             status: Status.PENDING,
             role: Role.BORROWER,
+            salt,
         }
-    })
+    });
 
-    return {
-        success: true,
-        message: "User created successfully",
+    if (!user) {
+        return {
+            success: false,
+            message: "Failed to create user",
+        }
+    }
+
+    revalidatePath('/login');
+    return {success: true, message: "Account created successfully"}
+    
+    } catch (error) {
+        return {
+            success: false,
+            message: "Failed to create user",
+            errors: error instanceof Error ? error.message : error
+        }
     }
 }
