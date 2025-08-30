@@ -11,16 +11,16 @@ const sessionSchema = z.object({
     role: z.enum(Role),
     name: z.string(),
     email: z.string(),
-    phone_no: z.string(),
+    phoneNo: z.string(),
     address: z.string(),
-    dob: z.date(),
+    dob: z.string(),
     status: z.enum(Status)
 });
 
 type User = z.infer<typeof sessionSchema>;
 
-type Cookies = {
-    get: (name: string) => string | undefined;
+export type Cookies = {
+    get: (name: string) => { name: string, value: string } | undefined;
     set: (name: string, value: string, options: { httpOnly: boolean; secure: boolean; maxAge: number; path: string; expires: Date; sameSite: 'lax' | 'strict' | 'none' }) => void;
     delete: (name: string) => void;
 }

@@ -39,6 +39,9 @@ export default function SignupForm() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-white mb-2">Create an Account</h1>
         </div>
+        <div className="text-center">
+          {state.success && <p className="text-red-500">{state.message}</p>}
+        </div>
         <form className="space-y-6" action={formAction}>
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">

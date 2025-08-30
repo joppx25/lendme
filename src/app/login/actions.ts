@@ -24,7 +24,7 @@ export async function login(state: any, formData: FormData) {
 
     const { email, password } = validatedField.data;
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
         where: {
             email,
         }
@@ -44,7 +44,7 @@ export async function login(state: any, formData: FormData) {
         }
     }
 
-    const isPasswordValid = await verifyPassword(password, user.password, env.AUTH_SECRET);
+    const isPasswordValid = await verifyPassword(password, user.password, user.salt);
 
     if (!isPasswordValid) {
         return {
@@ -53,7 +53,7 @@ export async function login(state: any, formData: FormData) {
         }
     }
     
-    const session = await createUserSession(user, await cookies());
+    await createUserSession(user, await cookies());
 
     // if (!session) {
     //     return {

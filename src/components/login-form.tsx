@@ -1,22 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { login } from '@/app/login/actions';
+import { useState, useActionState } from 'react';
 
 export default function SimpleLoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [state, formAction, pending] = useActionState(login, { success: false, message: '' });
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+  //   setIsLoading(true);
     
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Login attempt:', { email, password });
-      setIsLoading(false);
-    }, 1000);
-  };
+  //   // Simulate API call
+  //   setTimeout(() => {
+  //     console.log('Login attempt:', { email, password });
+  //     setIsLoading(false);
+  //   }, 1000);
+  // };
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -26,7 +28,7 @@ export default function SimpleLoginForm() {
           <p className="text-gray-400">Please sign in to your account</p>
         </div>
 
-        <form className="space-y-6">
+        <form className="space-y-6" action={formAction}>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
               Email Address
@@ -36,6 +38,7 @@ export default function SimpleLoginForm() {
               type="email"
               required
               value={email}
+              name="email"
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               placeholder="Enter your email"
@@ -49,6 +52,7 @@ export default function SimpleLoginForm() {
             </label>
             <input
               id="password"
+              name="password"
               type="password"
               required
               minLength={6}
@@ -76,10 +80,12 @@ export default function SimpleLoginForm() {
             </a>
           </div>
 
+          <div className="text-center">
+            { !state?.success && <p className="text-red-500">{state?.message}</p> }
+          </div>
           <button
             type="submit"
             disabled={isLoading}
-            onClick={handleSubmit}
             className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-800"
           >
             {isLoading ? (

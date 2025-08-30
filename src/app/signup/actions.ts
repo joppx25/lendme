@@ -43,7 +43,7 @@ export async function signup(state: any,formData: FormData) {
 
     const { email, password, name, dob, phoneNo, address } = validatedField.data;
 
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
         where: {
             email,
         }
@@ -63,7 +63,7 @@ export async function signup(state: any,formData: FormData) {
     const salt = generateSalt();
     const hashedPassword = hashPassword(password, salt);
 
-    const user = await prisma.user.create({
+    const user = await prisma.users.create({
         data: {
             email,
             password: hashedPassword,
