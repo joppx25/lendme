@@ -3,6 +3,7 @@ import { getCurrentSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { decimalToNumber } from "@/lib/loanUtils";
+import { getContributionUsers } from "@/app/contributions/actions";
 
 export default async function ContributionsPage() {
   const currentUser = await getCurrentSession();
@@ -14,6 +15,12 @@ export default async function ContributionsPage() {
   // Fetch contributions based on user role
   let rawContributions;
   let rawFundBalance = null;
+  let availableUsers: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: any;
+  }> = [];
 
   if (['SUPERADMIN', 'MANAGER'].includes(currentUser.role)) {
     // Managers and admins can see all contributions
@@ -34,6 +41,9 @@ export default async function ContributionsPage() {
 
     // Get fund balance for managers/admins
     rawFundBalance = await prisma.fundBalance.findFirst();
+    
+    // Get users that can receive contributions
+    availableUsers = await getContributionUsers();
   } else {
     // Regular users can only see their own contributions
     rawContributions = await prisma.contributions.findMany({
@@ -94,6 +104,7 @@ export default async function ContributionsPage() {
           contributions={contributions} 
           fundBalance={fundBalance}
           userRole={currentUser.role}
+          availableUsers={availableUsers}
         />
       </div>
     </div>

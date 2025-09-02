@@ -14,6 +14,7 @@ const contributionSchema = z.object({
   paymentMethod: z.nativeEnum(PaymentMethod),
   receiptNumber: z.string().optional(),
   description: z.string().optional(),
+  contributorId: z.string().optional(), // For admin-created contributions
 });
 
 export async function makeContribution(state: any, formData: FormData) {
@@ -33,6 +34,7 @@ export async function makeContribution(state: any, formData: FormData) {
       paymentMethod: formData.get('paymentMethod'),
       receiptNumber: formData.get('receiptNumber'),
       description: formData.get('description'),
+      contributorId: formData.get('contributorId'),
     });
 
     if (!validatedFields.success) {
@@ -42,12 +44,43 @@ export async function makeContribution(state: any, formData: FormData) {
       };
     }
 
-    const { amount, contributionType, paymentMethod, receiptNumber, description } = validatedFields.data;
+    const { amount, contributionType, paymentMethod, receiptNumber, description, contributorId } = validatedFields.data;
+
+    // Determine the actual contributor
+    let actualContributorId = currentUser.id;
+    
+    // If admin is creating contribution for another user
+    if (contributorId && ['SUPERADMIN', 'MANAGER'].includes(currentUser.role)) {
+      // Verify the target user exists and is a borrower or guest
+      const targetUser = await prisma.users.findUnique({
+        where: { id: contributorId }
+      });
+      
+      if (!targetUser) {
+        return {
+          success: false,
+          errors: {
+            contributorId: ["Selected user not found"],
+          },
+        };
+      }
+      
+      if (!['BORROWER', 'GUEST'].includes(targetUser.role)) {
+        return {
+          success: false,
+          errors: {
+            contributorId: ["Can only create contributions for borrowers and guests"],
+          },
+        };
+      }
+      
+      actualContributorId = contributorId;
+    }
 
     // Create contribution
     const contribution = await prisma.contributions.create({
       data: {
-        contributorId: currentUser.id,
+        contributorId: actualContributorId,
         amount,
         contributionType,
         paymentMethod,
@@ -55,6 +88,7 @@ export async function makeContribution(state: any, formData: FormData) {
         description: description || null,
         status: ContributionStatus.PENDING,
         contributedAt: new Date(),
+        processedBy: actualContributorId !== currentUser.id ? currentUser.id : null, // Mark who created it if admin
       },
     });
 
@@ -137,5 +171,40 @@ export async function rejectContribution(contributionId: string) {
   } catch (error) {
     console.error('Contribution rejection error:', error);
     throw error;
+  }
+}
+
+export async function getContributionUsers() {
+  try {
+    const currentUser = await getCurrentSession();
+    
+    if (!currentUser || !['SUPERADMIN', 'MANAGER'].includes(currentUser.role)) {
+      return [];
+    }
+
+    // Get all borrowers and guests
+    const users = await prisma.users.findMany({
+      where: {
+        role: {
+          in: ['BORROWER', 'GUEST']
+        },
+        status: 'ACTIVE'
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+
+    return users;
+
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return [];
   }
 }

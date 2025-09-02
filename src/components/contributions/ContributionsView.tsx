@@ -56,6 +56,12 @@ interface ContributionsViewProps {
   contributions: Contribution[];
   fundBalance?: FundBalance | null;
   userRole: Role;
+  availableUsers?: Array<{
+    id: string;
+    name: string;
+    email: string;
+    role: Role;
+  }>;
 }
 
 const contributionTypes = [
@@ -100,7 +106,7 @@ const paymentMethods = [
   { value: PaymentMethod.ONLINE_BANKING, label: "Online Banking" },
 ];
 
-export function ContributionsView({ contributions, fundBalance, userRole }: ContributionsViewProps) {
+export function ContributionsView({ contributions, fundBalance, userRole, availableUsers = [] }: ContributionsViewProps) {
   const [showForm, setShowForm] = useState(false);
   const [state, formAction, pending] = useActionState(makeContribution, { success: false, message: '' });
 
@@ -247,6 +253,31 @@ export function ContributionsView({ contributions, fundBalance, userRole }: Cont
           </CardHeader>
           <CardContent>
             <form action={formAction} className="space-y-4">
+              {/* User Selector for Admins */}
+              {canManageContributions && availableUsers.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="contributorId">Contributing for (Optional)</Label>
+                  <select
+                    id="contributorId"
+                    name="contributorId"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <option value="">For myself</option>
+                    {availableUsers.map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.name} ({user.email}) - {user.role.toLowerCase()}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    Leave empty to create contribution for yourself, or select a user to create on their behalf.
+                  </p>
+                  {state?.errors?.contributorId && (
+                    <p className="text-sm text-red-500">{state.errors.contributorId[0]}</p>
+                  )}
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="amount">Contribution Amount (₱)</Label>
