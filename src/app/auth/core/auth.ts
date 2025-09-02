@@ -3,7 +3,7 @@ import { z } from "zod";
 import { redis } from "@/lib/redis";
 
 export const SESSION_EXPIRATION_TIME = 60 * 60 * 24 * 30; // 30 days
-export const SESSION_COOKIE_NAME = 'sessionToken-v1';
+export const SESSION_COOKIE_NAME = 'token-lendme';
 
 export const sessionSchema = z.object({
     id: z.string(),
@@ -29,6 +29,18 @@ export async function createUserSession(user: User, cookies: Cookies) {
     await redis.set(`session:${sessionToken}`, JSON.stringify(sessionSchema.parse(user)), { ex: SESSION_EXPIRATION_TIME });
 
     setCookie(sessionToken, cookies);
+}
+
+export async function destroyUserSession(cookies: Cookies) {
+    const sessionCookie = cookies.get(SESSION_COOKIE_NAME);
+    
+    if (sessionCookie) {
+        // Remove session from Redis
+        await redis.del(`session:${sessionCookie.value}`);
+        
+        // Clear the cookie
+        cookies.delete(SESSION_COOKIE_NAME);
+    }
 }
 
 function setCookie(sessionToken: string, cookies: Pick<Cookies, 'set'>) {

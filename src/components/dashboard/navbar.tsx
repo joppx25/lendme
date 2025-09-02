@@ -5,9 +5,18 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut, Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
+import { logout } from "@/app/logout/actions";
 
 export function Navbar() {
   const pathname = usePathname();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
 
   return (
     <header className="flex h-16 items-center justify-between border-b bg-white px-6 shadow-sm">
@@ -34,8 +43,11 @@ export function Navbar() {
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Profile</DropdownMenuItem>
             <DropdownMenuItem>Settings</DropdownMenuItem>
-            <DropdownMenuItem className="text-red-500">
-              <LogOut className="mr-2 h-4 w-4" /> Logout
+            <DropdownMenuItem 
+              className="text-red-500 cursor-pointer"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

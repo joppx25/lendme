@@ -6,6 +6,7 @@ import { verifyPassword } from "../auth/core/hasher";
 import { env } from "process";
 import { createUserSession } from "../auth/core/auth";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 const loginSchema = z.object({
     email: z.string('Email is required').email('Invalid email format'),
@@ -55,11 +56,6 @@ export async function login(state: any, formData: FormData) {
     
     await createUserSession(user, await cookies());
 
-    // if (!session) {
-    //     return {
-    //         success: false,
-    //         message: "Failed to create session",
-    //     }
-    // }
-    
+    // Redirect to dashboard after successful login
+    redirect('/dashboard');
 }

@@ -5,6 +5,7 @@ import { Status, Role } from "@/generated/prisma";
 import { z } from "zod";
 import { generateSalt, hashPassword } from "@/app/auth/core/hasher";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 const signupSchema = z.object({
     email: z.string('Email is required').email('Invalid email format'),
@@ -84,8 +85,9 @@ export async function signup(state: any,formData: FormData) {
         }
     }
 
+    // Redirect to login page after successful registration
     revalidatePath('/login');
-    return {success: true, message: "Account created successfully"}
+    redirect('/login?message=Account created successfully. Please log in.');
     
     } catch (error) {
         return {
