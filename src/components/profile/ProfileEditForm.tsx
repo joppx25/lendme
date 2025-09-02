@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useState, useActionState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,21 +30,26 @@ export function ProfileEditForm({ user, onCancel, onSuccess }: ProfileEditFormPr
       .slice(0, 2);
   };
 
-  // Handle successful update
-  if (state?.success) {
-    // Update the store with new data
-    const formData = new FormData(document.querySelector('form') as HTMLFormElement);
-    const updatedUser = {
-      ...user,
-      name: formData.get('name') as string,
-      email: formData.get('email') as string,
-      phoneNo: formData.get('phoneNo') as string,
-      address: formData.get('address') as string,
-      dob: formData.get('dob') as string,
-    };
-    setUser(updatedUser);
-    onSuccess();
-  }
+  // Handle successful update with useEffect to prevent setState during render
+  useEffect(() => {
+    if (state?.success) {
+      // Update the store with new data
+      const form = document.querySelector('form') as HTMLFormElement;
+      if (form) {
+        const formData = new FormData(form);
+        const updatedUser = {
+          ...user,
+          name: formData.get('name') as string,
+          email: formData.get('email') as string,
+          phoneNo: formData.get('phoneNo') as string,
+          address: formData.get('address') as string,
+          dob: formData.get('dob') as string,
+        };
+        setUser(updatedUser);
+        onSuccess();
+      }
+    }
+  }, [state?.success, user, setUser, onSuccess]);
 
   return (
     <Card className="w-full max-w-4xl">

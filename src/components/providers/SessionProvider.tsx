@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuthStore, User } from "@/store/authStore";
 
 export function SessionProvider({ 
@@ -11,12 +11,13 @@ export function SessionProvider({
   initialUser: User | null;
 }) {
   const { setUser } = useAuthStore();
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
-    if (initialUser) {
+    // Only initialize once to prevent re-render loops
+    if (!hasInitialized.current) {
       setUser(initialUser);
-    } else {
-      setUser(null);
+      hasInitialized.current = true;
     }
   }, [initialUser, setUser]);
 
