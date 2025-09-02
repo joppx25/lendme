@@ -13,7 +13,8 @@ export const sessionSchema = z.object({
     phoneNo: z.string(),
     address: z.string(),
     dob: z.string(),
-    status: z.enum(Status)
+    status: z.enum(Status),
+    activated: z.boolean(),
 });
 
 type User = z.infer<typeof sessionSchema>;

@@ -10,6 +10,7 @@ export interface User {
     address: string;
     dob: string;
     status: Status;
+    activated: boolean;
 }
 
 interface AuthState {

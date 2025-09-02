@@ -26,68 +26,68 @@ const signupSchema = z.object({
 export async function signup(state: any,formData: FormData) {
 
     try {
-    const validatedField = signupSchema.safeParse({
-        email: formData.get('email'),
-        password: formData.get('password'),
-        name: formData.get('name'),
-        dob: formData.get('dob'),
-        phoneNo: formData.get('phoneNo'),
-        address: formData.get('address'),
-    })
+        const validatedField = signupSchema.safeParse({
+            email: formData.get('email'),
+            password: formData.get('password'),
+            name: formData.get('name'),
+            dob: formData.get('dob'),
+            phoneNo: formData.get('phoneNo'),
+            address: formData.get('address'),
+        })
 
-    if (!validatedField.success) {
-        return {
-            success: false,
-            errors: validatedField.error.flatten().fieldErrors,
-        }
-    }
-
-    const { email, password, name, dob, phoneNo, address } = validatedField.data;
-
-    const existingUser = await prisma.users.findUnique({
-        where: {
-            email,
-        }
-    })
-
-    console.log('existingUser', existingUser);
-
-    if (existingUser) {
-        return {
-            success: false,
-            errors: {
-                email: "Email already exists",
+        if (!validatedField.success) {
+            return {
+                success: false,
+                errors: validatedField.error.flatten().fieldErrors,
             }
         }
-    }
 
-    const salt = generateSalt();
-    const hashedPassword = hashPassword(password, salt);
+        const { email, password, name, dob, phoneNo, address } = validatedField.data;
 
-    const user = await prisma.users.create({
-        data: {
-            email,
-            password: hashedPassword,
-            name,
-            dob,
-            phoneNo,
-            address,
-            status: Status.PENDING,
-            role: Role.BORROWER,
-            salt,
+        const existingUser = await prisma.users.findUnique({
+            where: {
+                email,
+            }
+        })
+
+        console.log('existingUser', existingUser);
+
+        if (existingUser) {
+            return {
+                success: false,
+                errors: {
+                    email: "Email already exists",
+                }
+            }
         }
-    });
 
-    if (!user) {
-        return {
-            success: false,
-            message: "Failed to create user",
+        const salt = generateSalt();
+        const hashedPassword = hashPassword(password, salt);
+
+        const user = await prisma.users.create({
+            data: {
+                email,
+                password: hashedPassword,
+                name,
+                dob,
+                phoneNo,
+                address,
+                status: Status.PENDING,
+                role: Role.BORROWER,
+                salt,
+            }
+        });
+
+        if (!user) {
+            return {
+                success: false,
+                message: "Failed to create user",
+            }
         }
-    }
 
-    // Redirect to login page after successful registration
-    revalidatePath('/login');
-    redirect('/login?message=Account created successfully. Please log in.');
+        // Redirect to login page after successful registration
+        revalidatePath('/login');
+        redirect('/login?message=Account created successfully. Please log in.');
     
     } catch (error) {
         return {
