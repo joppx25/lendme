@@ -28,6 +28,14 @@ model users {
   salt      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Relationships
+  loans        loans[]        @relation("BorrowerLoans")
+  contributions contributions[] @relation("UserContributions")
+  loanPayments loanPayments[] @relation("UserPayments")
+  
+  // Loans approved/managed by this user (for managers/admins)
+  approvedLoans loans[] @relation("LoanApprover")
 }
 
 enum Status {
@@ -42,4 +50,152 @@ enum Role {
   MANAGER
   BORROWER
   GUEST
+}
+
+// Loan-related models
+model loans {
+  id              String      @id @default(uuid())
+  loanNumber      String      @unique @map("loan_number")
+  borrowerId      String      @map("borrower_id")
+  approverId      String?     @map("approver_id")
+  loanType        LoanType    @map("loan_type")
+  principalAmount Decimal     @map("principal_amount") @db.Decimal(15, 2)
+  interestRate    Decimal     @map("interest_rate") @db.Decimal(5, 2) // Percentage
+  termMonths      Int         @map("term_months")
+  monthlyPayment  Decimal     @map("monthly_payment") @db.Decimal(15, 2)
+  totalAmount     Decimal     @map("total_amount") @db.Decimal(15, 2) // Principal + Interest
+  remainingBalance Decimal    @map("remaining_balance") @db.Decimal(15, 2)
+  status          LoanStatus  @default(PENDING)
+  purpose         String      // Purpose of the loan
+  collateral      String?     // Optional collateral description
+  startDate       DateTime?   @map("start_date")
+  endDate         DateTime?   @map("end_date")
+  requestedAt     DateTime    @default(now()) @map("requested_at")
+  approvedAt      DateTime?   @map("approved_at")
+  rejectedAt      DateTime?   @map("rejected_at")
+  rejectionReason String?     @map("rejection_reason")
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  // Relationships
+  borrower        users           @relation("BorrowerLoans", fields: [borrowerId], references: [id], onDelete: Cascade)
+  approver        users?          @relation("LoanApprover", fields: [approverId], references: [id])
+  payments        loanPayments[]  @relation("LoanPayments")
+  
+  @@map("loans")
+}
+
+model loanPayments {
+  id              String         @id @default(uuid())
+  loanId          String         @map("loan_id")
+  payerId         String         @map("payer_id")
+  paymentNumber   Int            @map("payment_number") // 1st payment, 2nd payment, etc.
+  scheduledAmount Decimal        @map("scheduled_amount") @db.Decimal(15, 2)
+  paidAmount      Decimal        @map("paid_amount") @db.Decimal(15, 2)
+  principalPaid   Decimal        @map("principal_paid") @db.Decimal(15, 2)
+  interestPaid    Decimal        @map("interest_paid") @db.Decimal(15, 2)
+  lateFee         Decimal        @default(0) @map("late_fee") @db.Decimal(15, 2)
+  scheduledDate   DateTime       @map("scheduled_date")
+  paidDate        DateTime?      @map("paid_date")
+  status          PaymentStatus  @default(PENDING)
+  paymentMethod   PaymentMethod? @map("payment_method")
+  receiptNumber   String?        @map("receipt_number")
+  notes           String?        // Additional notes
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  // Relationships
+  loan            loans          @relation("LoanPayments", fields: [loanId], references: [id], onDelete: Cascade)
+  payer           users          @relation("UserPayments", fields: [payerId], references: [id])
+
+  @@unique([loanId, paymentNumber])
+  @@map("loan_payments")
+}
+
+model contributions {
+  id              String            @id @default(uuid())
+  contributorId   String            @map("contributor_id")
+  amount          Decimal           @db.Decimal(15, 2)
+  contributionType ContributionType @map("contribution_type")
+  paymentMethod   PaymentMethod     @map("payment_method")
+  receiptNumber   String?           @map("receipt_number")
+  description     String?           // Optional description
+  status          ContributionStatus @default(PENDING)
+  contributedAt   DateTime          @default(now()) @map("contributed_at")
+  processedAt     DateTime?         @map("processed_at")
+  processedBy     String?           @map("processed_by") // User ID who processed
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  // Relationships
+  contributor     users             @relation("UserContributions", fields: [contributorId], references: [id], onDelete: Cascade)
+
+  @@map("contributions")
+}
+
+// Fund tracking for the lending pool
+model fundBalance {
+  id              String    @id @default(uuid())
+  totalFunds      Decimal   @map("total_funds") @db.Decimal(15, 2)
+  availableFunds  Decimal   @map("available_funds") @db.Decimal(15, 2) // Funds not yet loaned out
+  loanedFunds     Decimal   @map("loaned_funds") @db.Decimal(15, 2) // Currently outstanding loans
+  totalContributions Decimal @map("total_contributions") @db.Decimal(15, 2)
+  totalRepayments Decimal   @map("total_repayments") @db.Decimal(15, 2)
+  lastUpdated     DateTime  @default(now()) @map("last_updated")
+  
+  @@map("fund_balance")
+}
+
+// Enums for the loan system
+enum LoanType {
+  PERSONAL
+  BUSINESS
+  EMERGENCY
+  EDUCATION
+  MEDICAL
+  AGRICULTURE
+}
+
+enum LoanStatus {
+  PENDING      // Initial application
+  UNDER_REVIEW // Being evaluated
+  APPROVED     // Approved and funds disbursed
+  ACTIVE       // Currently being repaid
+  COMPLETED    // Fully paid off
+  OVERDUE      // Has missed payments
+  DEFAULTED    // In default
+  REJECTED     // Application rejected
+  CANCELLED    // Cancelled before approval
+}
+
+enum PaymentStatus {
+  PENDING      // Payment scheduled but not made
+  PAID         // Payment completed on time
+  LATE         // Payment made after due date
+  PARTIAL      // Partial payment made
+  MISSED       // Payment not made and overdue
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  GCASH
+  PAYMAYA
+  CHECK
+  ONLINE_BANKING
+}
+
+enum ContributionType {
+  INITIAL_CAPITAL    // Initial fund contribution
+  MONTHLY_SAVINGS    // Regular monthly contributions
+  VOLUNTARY          // Voluntary additional contributions
+  PROFIT_SHARING     // Share of profits from loans
+  SPECIAL_ASSESSMENT // Special one-time contributions
+}
+
+enum ContributionStatus {
+  PENDING    // Contribution submitted but not processed
+  APPROVED   // Contribution approved and added to fund
+  REJECTED   // Contribution rejected
+  PROCESSING // Currently being processed
 }

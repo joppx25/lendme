@@ -45,6 +45,18 @@ const menuItems: MenuItem[] = [
     roles: [Role.BORROWER], // Only borrowers see their own loans
   },
   {
+    href: "/apply-loan",
+    icon: <DollarSign size={18} />,
+    label: "Apply for Loan",
+    roles: [Role.BORROWER], // Only borrowers can apply for loans
+  },
+  {
+    href: "/contributions",
+    icon: <PiggyBank size={18} />,
+    label: "Contributions",
+    roles: [Role.SUPERADMIN, Role.MANAGER, Role.BORROWER], // All can access contributions
+  },
+  {
     href: "/savings",
     icon: <PiggyBank size={18} />,
     label: "Savings",
