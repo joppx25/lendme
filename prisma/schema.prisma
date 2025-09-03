@@ -69,6 +69,7 @@ model loans {
   status          LoanStatus  @default(PENDING)
   purpose         String      // Purpose of the loan
   collateral      String?     // Optional collateral description
+  requirementFiles Json?      @map("requirement_files") // JSON array of uploaded file paths
   startDate       DateTime?   @map("start_date")
   endDate         DateTime?   @map("end_date")
   requestedAt     DateTime    @default(now()) @map("requested_at")

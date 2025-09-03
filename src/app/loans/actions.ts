@@ -13,6 +13,7 @@ import {
   getMaxAmountByType, 
   getMaxTermByType 
 } from "@/lib/loanUtils";
+import { saveUploadedFiles, validateFile } from "@/lib/fileUpload";
 
 const loanApplicationSchema = z.object({
   loanType: z.nativeEnum(LoanType),
@@ -100,6 +101,38 @@ export async function applyForLoan(state: any, formData: FormData) {
       };
     }
 
+    // Handle file uploads
+    const files = formData.getAll('requirements') as File[];
+    let uploadedFiles: any[] = [];
+    
+    if (files && files.length > 0) {
+      // Filter out empty files
+      const validFiles = files.filter(file => file.size > 0);
+      
+      if (validFiles.length > 0) {
+        // Validate each file
+        for (const file of validFiles) {
+          const validation = validateFile(file);
+          if (!validation.valid) {
+            return {
+              success: false,
+              message: `File validation failed: ${validation.error}`,
+            };
+          }
+        }
+        
+        try {
+          uploadedFiles = await saveUploadedFiles(validFiles, `loan-${currentUser.id}`);
+        } catch (error) {
+          console.error('File upload error:', error);
+          return {
+            success: false,
+            message: "Failed to upload requirement files",
+          };
+        }
+      }
+    }
+
     // Calculate loan details
     const interestRate = getInterestRateByType(loanType);
     const loanCalculation = calculateSimpleInterestLoan(principalAmount, interestRate, termMonths);
@@ -120,6 +153,7 @@ export async function applyForLoan(state: any, formData: FormData) {
         status: LoanStatus.PENDING,
         purpose,
         collateral: collateral || null,
+        requirementFiles: uploadedFiles.length > 0 ? JSON.stringify(uploadedFiles) : undefined,
         requestedAt: new Date(),
       },
     });

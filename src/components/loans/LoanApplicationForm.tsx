@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useActionState } from "react";
+import { useState, useActionState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,10 +8,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Calculator, DollarSign, Calendar, FileText, Loader2 } from "lucide-react";
+import { Calculator, DollarSign, Calendar, FileText, Loader2, Upload, X, File } from "lucide-react";
 import { applyForLoan } from "@/app/loans/actions";
 import { LoanType } from "@/generated/prisma";
-import { calculateLoanPayment, getInterestRateByType, getMaxAmountByType, getMaxTermByType, formatCurrency } from "@/lib/loanUtils";
+import { calculateSimpleInterestLoan, getInterestRateByType, getMaxAmountByType, getMaxTermByType, formatCurrency } from "@/lib/loanUtils";
 
 const loanTypes = [
   { 
@@ -58,16 +58,17 @@ export function LoanApplicationForm() {
   const [amount, setAmount] = useState<string>('');
   const [term, setTerm] = useState<string>('');
   const [calculation, setCalculation] = useState<any>(null);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // Calculate loan details when inputs change
-  const calculateLoan = () => {
+  useEffect(() => {
     if (selectedLoanType && amount && term) {
       const principal = parseFloat(amount);
       const months = parseInt(term);
       
       if (principal > 0 && months > 0) {
         const interestRate = getInterestRateByType(selectedLoanType);
-        const calc = calculateLoanPayment(principal, interestRate, months);
+        const calc = calculateSimpleInterestLoan(principal, interestRate, months);
         setCalculation(calc);
       } else {
         setCalculation(null);
@@ -75,26 +76,72 @@ export function LoanApplicationForm() {
     } else {
       setCalculation(null);
     }
-  };
-
-  // Recalculate when inputs change
-  useState(() => {
-    calculateLoan();
-  });
+  }, [selectedLoanType, amount, term]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmount(e.target.value);
-    setTimeout(calculateLoan, 100);
   };
 
   const handleTermChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTerm(e.target.value);
-    setTimeout(calculateLoan, 100);
   };
 
   const handleLoanTypeChange = (loanType: LoanType) => {
     setSelectedLoanType(loanType);
-    setTimeout(calculateLoan, 100);
+  };
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    const validFiles = files.filter(file => {
+      // Check file size (max 5MB per file)
+      if (file.size > 5 * 1024 * 1024) {
+        alert(`File ${file.name} is too large. Maximum size is 5MB.`);
+        return false;
+      }
+      // Check file type
+      const allowedTypes = [
+        'application/pdf',
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      ];
+      if (!allowedTypes.includes(file.type)) {
+        alert(`File ${file.name} has unsupported format. Please upload PDF, JPG, PNG, or Word documents.`);
+        return false;
+      }
+      return true;
+    });
+    
+    // Limit total files to 10
+    const totalFiles = uploadedFiles.length + validFiles.length;
+    if (totalFiles > 10) {
+      alert('Maximum 10 files allowed. Please remove some files first.');
+      return;
+    }
+    
+    setUploadedFiles(prev => [...prev, ...validFiles]);
+    event.target.value = ''; // Reset input
+  };
+
+  const removeFile = (index: number) => {
+    setUploadedFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const getFileIcon = (file: File) => {
+    if (file.type.includes('pdf')) return '📄';
+    if (file.type.includes('image')) return '🖼️';
+    if (file.type.includes('word')) return '📝';
+    return '📁';
+  };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   if (state?.success) {
@@ -136,7 +183,13 @@ export function LoanApplicationForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form action={formAction} className="space-y-6">
+            <form action={(formData) => {
+              // Add uploaded files to FormData
+              uploadedFiles.forEach((file, index) => {
+                formData.append('requirements', file);
+              });
+              formAction(formData);
+            }} className="space-y-6">
               {/* Loan Type Selection */}
               <div className="space-y-3">
                 <Label>Select Loan Type</Label>
@@ -176,11 +229,11 @@ export function LoanApplicationForm() {
                               </div>
                               <div className="flex justify-between text-xs">
                                 <span>Max Term:</span>
-                                <span className="font-medium">{maxTerm} months</span>
+                                <span className="font-medium">{maxTerm} month(s)</span>
                               </div>
                               <div className="flex justify-between text-xs">
                                 <span>Interest Rate:</span>
-                                <span className="font-medium">{interestRate}% annually</span>
+                                <span className="font-medium">{interestRate}% for entire term</span>
                               </div>
                             </div>
                           </div>
@@ -274,6 +327,98 @@ export function LoanApplicationForm() {
                 )}
               </div>
 
+              {/* Requirements Upload Section */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Upload Requirements</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Upload required documents for loan review (PDF, JPG, PNG, DOC formats • Max 5MB per file • Max 10 files)
+                  </p>
+                  
+                  {/* File Upload Area */}
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors">
+                    <input
+                      type="file"
+                      id="requirements"
+                      multiple
+                      accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
+                      onChange={handleFileUpload}
+                      className="hidden"
+                    />
+                    <label 
+                      htmlFor="requirements" 
+                      className="cursor-pointer flex flex-col items-center space-y-2"
+                    >
+                      <Upload className="w-8 h-8 text-gray-400" />
+                      <div>
+                        <span className="text-sm font-medium text-gray-700">Click to upload files</span>
+                        <p className="text-xs text-gray-500">or drag and drop</p>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Uploaded Files List */}
+                  {uploadedFiles.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-sm font-medium">Uploaded Files ({uploadedFiles.length}/10):</p>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {uploadedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center justify-between bg-gray-50 p-3 rounded-lg border">
+                            <div className="flex items-center space-x-3 flex-1 min-w-0">
+                              <span className="text-lg">{getFileIcon(file)}</span>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 truncate">{file.name}</p>
+                                <p className="text-xs text-gray-500">{formatFileSize(file.size)}</p>
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeFile(index)}
+                              className="ml-2 text-red-500 hover:text-red-700 transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Requirements Checklist */}
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h4 className="font-medium text-blue-900 mb-2 flex items-center">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Required Documents
+                    </h4>
+                    <ul className="space-y-1 text-sm text-blue-800">
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                        Valid government-issued ID (front and back)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                        Proof of income (payslip, certificate, etc.)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                        Bank statements (last 3 months)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                        Proof of residence (utility bill, etc.)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                        Additional documents as required by loan type
+                      </li>
+                    </ul>
+                    <p className="text-xs text-blue-700 mt-2">
+                      💡 Tip: Complete documentation speeds up loan processing and approval
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Error/Success Messages */}
               {state?.message && !state?.success && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-md">
@@ -326,7 +471,7 @@ export function LoanApplicationForm() {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Interest Rate:</span>
-                    <span className="font-medium">{selectedLoanType ? getInterestRateByType(selectedLoanType) : 0}%</span>
+                    <span className="font-medium">{selectedLoanType ? getInterestRateByType(selectedLoanType) : 0}% for entire term</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-sm text-muted-foreground">Term:</span>

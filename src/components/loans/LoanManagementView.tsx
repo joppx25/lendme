@@ -31,6 +31,7 @@ import {
 import { LoanStatus, LoanType, PaymentStatus, Role } from "@/generated/prisma";
 import { formatCurrency } from "@/lib/loanUtils";
 import { manageLoan, setLoanUnderReview } from "@/app/loans/management-actions";
+import { RequirementFilesView } from "./RequirementFilesView";
 import { CreateLoanModal, EditLoanModal, LoanActions } from "./LoanCRUDComponents";
 
 interface LoanData {
@@ -59,6 +60,7 @@ interface LoanData {
   status: LoanStatus;
   purpose: string;
   collateral?: string | null;
+  requirementFiles?: any;
   startDate?: Date | null;
   endDate?: Date | null;
   requestedAt: Date;
@@ -508,6 +510,13 @@ export function LoanManagementView({ loans, statistics, fundBalance, currentUser
                       </p>
                     </div>
                   )}
+
+                  {/* Requirement Files */}
+                  <RequirementFilesView 
+                    files={loan.requirementFiles ? JSON.parse(loan.requirementFiles as string) : null}
+                    loanNumber={loan.loanNumber}
+                    borrowerName={loan.borrower.name}
+                  />
                 </CardContent>
               </Card>
             ))}

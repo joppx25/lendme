@@ -7,6 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Calendar, DollarSign, Clock, FileText, CreditCard } from "lucide-react";
 import { LoanStatus, LoanType } from "@/generated/prisma";
 import { formatCurrency, decimalToNumber } from "@/lib/loanUtils";
+import { RequirementFilesView } from "./RequirementFilesView";
 
 interface Loan {
   id: string;
@@ -21,6 +22,7 @@ interface Loan {
   status: LoanStatus;
   purpose: string;
   collateral?: string | null;
+  requirementFiles?: any;
   startDate?: Date | null;
   endDate?: Date | null;
   requestedAt: Date;
@@ -332,6 +334,13 @@ export function MyLoansView({ loans }: MyLoansViewProps) {
                     </div>
                   </div>
                 )}
+
+                {/* Requirement Files */}
+                <RequirementFilesView 
+                  files={loan.requirementFiles ? JSON.parse(loan.requirementFiles as string) : null}
+                  loanNumber={loan.loanNumber}
+                  borrowerName="You"
+                />
               </CardContent>
             </Card>
           );
