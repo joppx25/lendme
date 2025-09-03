@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Home, Users, DollarSign, BarChart, Settings, CreditCard, PiggyBank, User } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -72,6 +73,7 @@ const menuItems: MenuItem[] = [
 
 export function Sidebar() {
   const { user, hasAnyRole } = useAuthStore();
+  const pathname = usePathname();
 
   // Filter menu items based on user role
   const visibleMenuItems = menuItems.filter(item => 
@@ -99,6 +101,7 @@ export function Sidebar() {
             href={item.href}
             icon={item.icon}
             label={item.label}
+            isActive={pathname === item.href}
           />
         ))}
       </nav>      
@@ -106,15 +109,30 @@ export function Sidebar() {
   );
 }
 
-function NavItem({ href, icon, label }: { href: string; icon: React.ReactNode; label: string }) {
+function NavItem({ 
+  href, 
+  icon, 
+  label, 
+  isActive 
+}: { 
+  href: string; 
+  icon: React.ReactNode; 
+  label: string; 
+  isActive: boolean;
+}) {
   return (
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-3 px-4 py-2 text-sm hover:bg-gray-100 transition-colors"
+        "flex items-center gap-3 px-4 py-2 text-sm transition-colors rounded-md mx-2",
+        isActive 
+          ? "bg-blue-100 text-blue-700 font-medium border-r-2 border-blue-500" 
+          : "text-gray-700 hover:bg-gray-100 hover:text-gray-900"
       )}
     >
-      {icon}
+      <span className={cn(isActive ? "text-blue-600" : "text-gray-500")}>
+        {icon}
+      </span>
       {label}
     </Link>
   );
