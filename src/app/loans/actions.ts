@@ -7,7 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { LoanType, LoanStatus } from "@/generated/prisma";
 import { 
-  calculateLoanPayment, 
+  calculateSimpleInterestLoan, 
   generateLoanNumber, 
   getInterestRateByType, 
   getMaxAmountByType, 
@@ -102,7 +102,7 @@ export async function applyForLoan(state: any, formData: FormData) {
 
     // Calculate loan details
     const interestRate = getInterestRateByType(loanType);
-    const loanCalculation = calculateLoanPayment(principalAmount, interestRate, termMonths);
+    const loanCalculation = calculateSimpleInterestLoan(principalAmount, interestRate, termMonths);
     const loanNumber = generateLoanNumber();
 
     // Create loan application
@@ -148,6 +148,15 @@ export async function approveLoan(loanId: string, approverId: string) {
       throw new Error('Unauthorized');
     }
 
+    // Get loan details first to calculate end date
+    const existingLoan = await prisma.loans.findUnique({
+      where: { id: loanId },
+      select: { termMonths: true }
+    });
+    
+    const endDate = new Date();
+    endDate.setMonth(endDate.getMonth() + (existingLoan?.termMonths || 0));
+
     const loan = await prisma.loans.update({
       where: { id: loanId },
       data: {
@@ -155,7 +164,7 @@ export async function approveLoan(loanId: string, approverId: string) {
         approverId,
         approvedAt: new Date(),
         startDate: new Date(),
-        endDate: new Date(Date.now() + (30 * 24 * 60 * 60 * 1000 * parseInt(String(await prisma.loans.findUnique({ where: { id: loanId }, select: { termMonths: true } }))?.termMonths || '0'))),
+        endDate,
       },
     });
 
@@ -165,7 +174,7 @@ export async function approveLoan(loanId: string, approverId: string) {
     });
 
     if (loanDetails) {
-      const calculation = calculateLoanPayment(
+      const calculation = calculateSimpleInterestLoan(
         parseFloat(loanDetails.principalAmount.toString()),
         parseFloat(loanDetails.interestRate.toString()),
         loanDetails.termMonths,

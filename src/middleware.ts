@@ -26,7 +26,8 @@ export default async function middleware(req: NextRequest) {
             }
         } catch (error) {
             console.error('Session validation error:', error);
-            // Clear invalid session cookie if needed
+            
+            req.cookies.delete(SESSION_COOKIE_NAME);
         }
     }
 

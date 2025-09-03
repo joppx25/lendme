@@ -21,12 +21,6 @@ const menuItems: MenuItem[] = [
     roles: [Role.SUPERADMIN, Role.MANAGER, Role.BORROWER], // All roles can see overview
   },
   {
-    href: "/profile",
-    icon: <User size={18} />,
-    label: "Profile",
-    roles: [Role.SUPERADMIN, Role.MANAGER, Role.BORROWER], // All roles can see their profile
-  },
-  {
     href: "/users",
     icon: <Users size={18} />,
     label: "Users",
@@ -97,7 +91,7 @@ export function Sidebar() {
 
   return (
     <aside className="w-64 bg-white shadow-md">
-      <div className="p-4 font-bold text-xl border-b">LendMe</div>
+      <div className="p-4 font-bold text-xl border-b h-16">LendMe</div>
       <nav className="mt-6 space-y-2">
         {visibleMenuItems.map((item) => (
           <NavItem

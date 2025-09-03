@@ -17,7 +17,57 @@ export interface PaymentScheduleItem {
 }
 
 /**
- * Calculate loan payment details using simple interest
+ * Calculate loan payment details using simple interest for entire term
+ * @param principal - Loan principal amount
+ * @param termInterestRate - Interest rate for the entire term as percentage (e.g., 12 for 12%)
+ * @param termMonths - Loan term in months
+ * @param startDate - Loan start date
+ */
+export function calculateSimpleInterestLoan(
+  principal: number,
+  termInterestRate: number,
+  termMonths: number,
+  startDate: Date = new Date()
+): LoanCalculation {
+  // Calculate total interest for the entire term
+  const totalInterest = principal * (termInterestRate / 100);
+  const totalAmount = principal + totalInterest;
+  const monthlyPayment = totalAmount / termMonths;
+  
+  // Generate payment schedule with equal monthly payments
+  const paymentSchedule: PaymentScheduleItem[] = [];
+  let remainingBalance = totalAmount;
+  
+  for (let i = 1; i <= termMonths; i++) {
+    const scheduledDate = new Date(startDate);
+    scheduledDate.setMonth(scheduledDate.getMonth() + i);
+    
+    // For simple interest, each payment has equal principal and interest portions
+    const principalAmount = principal / termMonths;
+    const interestAmount = totalInterest / termMonths;
+    
+    remainingBalance = Math.max(0, remainingBalance - monthlyPayment);
+    
+    paymentSchedule.push({
+      paymentNumber: i,
+      scheduledDate,
+      scheduledAmount: monthlyPayment,
+      principalAmount,
+      interestAmount,
+      remainingBalance
+    });
+  }
+  
+  return {
+    monthlyPayment,
+    totalAmount,
+    totalInterest,
+    paymentSchedule
+  };
+}
+
+/**
+ * Calculate loan payment details using compound interest (original function for backward compatibility)
  * @param principal - Loan principal amount
  * @param annualInterestRate - Annual interest rate as percentage (e.g., 12 for 12%)
  * @param termMonths - Loan term in months
@@ -152,15 +202,14 @@ export function getDaysOverdue(
  */
 export function getInterestRateByType(loanType: string): number {
   const rates: Record<string, number> = {
-    PERSONAL: 12.0,    // 12% annual
-    BUSINESS: 15.0,    // 15% annual
-    EMERGENCY: 8.0,    // 8% annual (lower for emergencies)
-    EDUCATION: 10.0,   // 10% annual
-    MEDICAL: 8.0,      // 8% annual (lower for medical)
-    AGRICULTURE: 14.0, // 14% annual
+    PERSONAL: 10.0,    // 10% the entire loan amount
+    BUSINESS: 15.0,    // 15% the entire loan amount
+    EMERGENCY: 10.0,    // 10% the entire loan amount
+    EDUCATION: 10.0,   // 10% the entire loan amount
+    MEDICAL: 10.0,      // 10% the entire loan amount
   };
   
-  return rates[loanType] || 12.0; // Default to 12%
+  return rates[loanType] || 10.0; // Default to 10%
 }
 
 /**
@@ -168,15 +217,14 @@ export function getInterestRateByType(loanType: string): number {
  */
 export function getMaxTermByType(loanType: string): number {
   const maxTerms: Record<string, number> = {
-    PERSONAL: 36,      // 3 years max
-    BUSINESS: 60,      // 5 years max
-    EMERGENCY: 12,     // 1 year max
-    EDUCATION: 48,     // 4 years max
-    MEDICAL: 24,       // 2 years max
-    AGRICULTURE: 36,   // 3 years max
+    PERSONAL: 6,      // 6 months
+    BUSINESS: 3,      // 3 months
+    EMERGENCY: 1,     // 1 month
+    EDUCATION: 4,     // 4 months
+    MEDICAL: 6,       // 6 months
   };
   
-  return maxTerms[loanType] || 36; // Default to 3 years
+  return maxTerms[loanType] || 6; // Default to 6 months
 }
 
 /**
@@ -184,15 +232,14 @@ export function getMaxTermByType(loanType: string): number {
  */
 export function getMaxAmountByType(loanType: string): number {
   const maxAmounts: Record<string, number> = {
-    PERSONAL: 500000,     // ₱500,000 max
-    BUSINESS: 1000000,    // ₱1,000,000 max
-    EMERGENCY: 100000,    // ₱100,000 max
-    EDUCATION: 300000,    // ₱300,000 max
-    MEDICAL: 200000,      // ₱200,000 max
-    AGRICULTURE: 800000,  // ₱800,000 max
+    PERSONAL: 10000,     // ₱10,000 max
+    BUSINESS: 25000,    // ₱25,000 max
+    EMERGENCY: 50000,    // ₱50,000 max
+    EDUCATION: 10000,    // ₱10,000 max
+    MEDICAL: 20000,      // ₱20,000 max
   };
   
-  return maxAmounts[loanType] || 500000; // Default to ₱500,000
+  return maxAmounts[loanType] || 10000; // Default to ₱10,000
 }
 
 /**

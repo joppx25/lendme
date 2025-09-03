@@ -23,11 +23,15 @@ import {
   X,
   Loader2,
   Filter,
-  Search
+  Search,
+  Plus,
+  Edit2,
+  Trash2
 } from "lucide-react";
-import { LoanStatus, LoanType, PaymentStatus } from "@/generated/prisma";
+import { LoanStatus, LoanType, PaymentStatus, Role } from "@/generated/prisma";
 import { formatCurrency } from "@/lib/loanUtils";
 import { manageLoan, setLoanUnderReview } from "@/app/loans/management-actions";
+import { CreateLoanModal, EditLoanModal, LoanActions } from "./LoanCRUDComponents";
 
 interface LoanData {
   id: string;
@@ -38,6 +42,7 @@ interface LoanData {
     email: string;
     phoneNo: string;
     address: string;
+    role?: Role;
   };
   approver?: {
     id: string;
@@ -93,14 +98,18 @@ interface LoanManagementViewProps {
   statistics: LoanStatistic[];
   fundBalance?: FundBalance | null;
   currentUserId: string;
+  currentUserRole?: Role;
 }
 
-export function LoanManagementView({ loans, statistics, fundBalance, currentUserId }: LoanManagementViewProps) {
+export function LoanManagementView({ loans, statistics, fundBalance, currentUserId, currentUserRole }: LoanManagementViewProps) {
   const [selectedLoan, setSelectedLoan] = useState<LoanData | null>(null);
   const [filterStatus, setFilterStatus] = useState<LoanStatus | 'ALL'>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [showApprovalModal, setShowApprovalModal] = useState(false);
   const [approvalAction, setApprovalAction] = useState<'approve' | 'reject'>('approve');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingLoan, setEditingLoan] = useState<LoanData | null>(null);
   const [state, formAction, pending] = useActionState(manageLoan, { success: false, message: '' });
 
   const getStatusColor = (status: LoanStatus) => {
@@ -184,6 +193,21 @@ export function LoanManagementView({ loans, statistics, fundBalance, currentUser
     setShowApprovalModal(false);
     setSelectedLoan(null);
     // The page will be revalidated automatically
+  }
+
+  const handleEditLoan = (loan: LoanData) => {
+    // Check if user can manage this loan
+    if (currentUserRole === 'MANAGER' && loan.borrower.role === 'SUPERADMIN') {
+      alert('You cannot manage loans for superadmin users');
+      return;
+    }
+    setEditingLoan(loan);
+    setShowEditModal(true);
+  }
+
+  const handleRefresh = () => {
+    // This will trigger a page refresh
+    window.location.reload();
   }
 
   return (
@@ -283,6 +307,19 @@ export function LoanManagementView({ loans, statistics, fundBalance, currentUser
                 <option value="REJECTED">Rejected</option>
               </select>
             </div>
+
+            <div className="min-w-[150px]">
+              <Label>&nbsp;</Label>
+              <div className="mt-2">
+                <Button 
+                  onClick={() => setShowCreateModal(true)}
+                  className="w-full"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Create Loan
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -320,48 +357,70 @@ export function LoanManagementView({ loans, statistics, fundBalance, currentUser
                         <h3 className="font-semibold text-lg">{loan.loanNumber}</h3>
                         <p className="text-sm text-muted-foreground">
                           {loan.borrower.name} • {loan.borrower.email}
+                          {loan.borrower.role === 'SUPERADMIN' && (
+                            <Badge variant="outline" className="ml-2 text-xs">
+                              {loan.borrower.role}
+                            </Badge>
+                          )}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           Applied: {loan.requestedAt.toLocaleDateString()}
                         </p>
+                        {currentUserRole === 'MANAGER' && loan.borrower.role === 'SUPERADMIN' && (
+                          <p className="text-xs text-amber-600 font-medium">
+                            ⚠️ Restricted access - Contact superadmin
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Badge variant={getStatusColor(loan.status)}>
                         {loan.status.replace('_', ' ')}
                       </Badge>
-                      {['PENDING', 'UNDER_REVIEW'].includes(loan.status) && (
-                        <div className="flex space-x-1">
-                          {loan.status === 'PENDING' && (
+                      <div className="flex space-x-1">
+                        {/* CRUD Actions */}
+                        <LoanActions 
+                          loan={loan} 
+                          onEdit={() => handleEditLoan(loan)}
+                          onSuccess={handleRefresh}
+                          currentUserRole={currentUserRole}
+                        />
+                        
+                        {/* Approval Actions */}
+                        {['PENDING', 'UNDER_REVIEW'].includes(loan.status) && 
+                         !(currentUserRole === 'MANAGER' && loan.borrower.role === 'SUPERADMIN') && (
+                          <>
+                            {loan.status === 'PENDING' && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleSetUnderReview(loan.id)}
+                              >
+                                <Eye className="w-4 h-4 mr-1" />
+                                Review
+                              </Button>
+                            )}
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleSetUnderReview(loan.id)}
+                              onClick={() => handleApproval(loan, 'approve')}
+                              className="text-green-600 hover:bg-green-50"
                             >
-                              <Eye className="w-4 h-4 mr-1" />
-                              Review
+                              <Check className="w-4 h-4 mr-1" />
+                              Approve
                             </Button>
-                          )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleApproval(loan, 'approve')}
-                            className="text-green-600 hover:bg-green-50"
-                          >
-                            <Check className="w-4 h-4 mr-1" />
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleApproval(loan, 'reject')}
-                            className="text-red-600 hover:bg-red-50"
-                          >
-                            <X className="w-4 h-4 mr-1" />
-                            Reject
-                          </Button>
-                        </div>
-                      )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleApproval(loan, 'reject')}
+                              className="text-red-600 hover:bg-red-50"
+                            >
+                              <X className="w-4 h-4 mr-1" />
+                              Reject
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
                   </div>
                   
@@ -547,6 +606,25 @@ export function LoanManagementView({ loans, statistics, fundBalance, currentUser
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* CRUD Modals */}
+      <CreateLoanModal 
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onSuccess={handleRefresh}
+      />
+      
+      {editingLoan && (
+        <EditLoanModal 
+          loan={editingLoan}
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingLoan(null);
+          }}
+          onSuccess={handleRefresh}
+        />
       )}
     </div>
   );

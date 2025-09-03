@@ -26,6 +26,7 @@ export default async function LoansManagementPage() {
           email: true,
           phoneNo: true,
           address: true,
+          role: true,
         },
       },
       approver: {
@@ -114,6 +115,7 @@ export default async function LoansManagementPage() {
           statistics={statistics}
           fundBalance={processedFundBalance}
           currentUserId={currentUser.id}
+          currentUserRole={currentUser.role}
         />
       </div>
     </div>
