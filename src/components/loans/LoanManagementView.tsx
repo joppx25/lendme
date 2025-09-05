@@ -524,7 +524,7 @@ export function LoanManagementView({ loans, statistics, fundBalance, currentUser
 
                   {/* Requirement Files */}
                   <RequirementFilesView 
-                    files={loan.requirementFiles ? JSON.parse(loan.requirementFiles as unknown as string) as UploadedFile[] : null}
+                    files={loan.requirementFiles || null}
                     loanNumber={loan.loanNumber}
                     borrowerName={loan.borrower.name}
                   />
