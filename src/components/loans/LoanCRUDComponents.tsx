@@ -79,6 +79,12 @@ interface CreateLoanState {
   message?: string;
   errors?: {
     borrowerId?: string[];
+    principalAmount?: string[];
+    loanType?: string[];
+    termMonths?: string[];
+    interestRate?: string[];
+    purpose?: string[];
+    collateral?: string[];
   };
 }
 
@@ -411,6 +417,13 @@ interface UpdateLoanState {
   message?: string;
   errors?: {
     loanId?: string[];
+    principalAmount?: string[];
+    loanType?: string[];
+    termMonths?: string[];
+    interestRate?: string[];
+    purpose?: string[];
+    collateral?: string[];
+    status?: string[];
   };
 }
 
