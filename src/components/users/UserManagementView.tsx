@@ -121,6 +121,11 @@ interface CreateUserState {
   errors?: {
     name?: string[];
     email?: string[];
+    phoneNo?: string[];
+    address?: string[];
+    dob?: string[];
+    password?: string[];
+    role?: string[];
   };
 }
 
