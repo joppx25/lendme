@@ -56,6 +56,11 @@ interface LoanApplicationState {
   message?: string;
   errors?: {
     principalAmount?: string[];
+    loanType?: string[];
+    termMonths?: string[];
+    interestRate?: string[];
+    purpose?: string[];
+    collateral?: string[];
   };
 }
 
