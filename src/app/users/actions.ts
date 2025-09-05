@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getCurrentSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
-import { Role, Status } from "@/generated/prisma";
+import { Role, Status } from "@prisma/client";
 import { generateSalt, hashPassword } from "@/app/auth/core/hasher";
 
 interface UserUpdateState {

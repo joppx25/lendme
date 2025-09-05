@@ -1,4 +1,4 @@
-import { Role, Status } from "@/generated/prisma";
+import { Role, Status } from "@prisma/client";
 import { z } from "zod";
 import { redis } from "@/lib/redis";
 

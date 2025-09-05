@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getCurrentSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
-import { LoanStatus } from "@/generated/prisma";
+import { LoanStatus } from "@prisma/client";
 import { calculateLoanPayment, decimalToNumber } from "@/lib/loanUtils";
 
 const loanApprovalSchema = z.object({

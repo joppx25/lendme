@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { decimalToNumber } from "@/lib/loanUtils";
 import { getContributionUsers } from "@/app/contributions/actions";
-import { Role } from "@/generated/prisma";
+import { Role } from "@prisma/client";
 
 export default async function ContributionsPage() {
   const currentUser = await getCurrentSession();

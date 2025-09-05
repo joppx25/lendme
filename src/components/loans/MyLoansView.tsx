@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, DollarSign, Clock, FileText, CreditCard } from "lucide-react";
-import { LoanStatus, LoanType } from "@/generated/prisma";
+import { LoanStatus, LoanType } from "@prisma/client";
 import { formatCurrency } from "@/lib/loanUtils";
 import { RequirementFilesView } from "./RequirementFilesView";
 import { UploadedFile } from "@/lib/fileUpload";

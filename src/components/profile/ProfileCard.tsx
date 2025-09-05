@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit, Mail, Phone, MapPin, Calendar, Shield } from "lucide-react";
 import { User } from "@/store/authStore";
 import { ProfileEditForm } from "./ProfileEditForm";
-import { Role } from "@/generated/prisma";
+import { Role } from "@prisma/client";
 
 interface ProfileCardProps {
   user: User;

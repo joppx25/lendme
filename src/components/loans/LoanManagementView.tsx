@@ -22,7 +22,7 @@ import {
   Search,
   Plus,
 } from "lucide-react";
-import { LoanStatus, LoanType, Role } from "@/generated/prisma";
+import { LoanStatus, LoanType, Role } from "@prisma/client";
 import { formatCurrency } from "@/lib/loanUtils";
 import { manageLoan, setLoanUnderReview } from "@/app/loans/management-actions";
 import { RequirementFilesView } from "./RequirementFilesView";

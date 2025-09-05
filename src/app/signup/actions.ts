@@ -1,7 +1,7 @@
 'use server'
 
 import { prisma } from "@/lib/prisma";
-import { Status, Role } from "@/generated/prisma";
+import { Status, Role } from "@prisma/client";
 import { z } from "zod";
 import { generateSalt, hashPassword } from "@/app/auth/core/hasher";
 import { revalidatePath } from "next/cache";

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Role, Status } from "@/generated/prisma";
+import { Role, Status } from "@prisma/client";
 
 export interface User {
     id: string;

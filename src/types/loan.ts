@@ -5,7 +5,7 @@ import {
   PaymentMethod, 
   ContributionType, 
   ContributionStatus 
-} from "@/generated/prisma";
+} from "@prisma/client";
 
 // Loan-related types
 export interface LoanApplication {

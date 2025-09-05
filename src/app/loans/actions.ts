@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getCurrentSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
-import { LoanType, LoanStatus } from "@/generated/prisma";
+import { LoanType, LoanStatus } from "@prisma/client";
 import { 
   calculateSimpleInterestLoan, 
   generateLoanNumber, 

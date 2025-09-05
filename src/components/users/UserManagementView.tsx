@@ -40,7 +40,7 @@ import {
   ChevronDown,
   Calendar as CalendarIcon
 } from "lucide-react";
-import { Role, Status } from "@/generated/prisma";
+import { Role, Status } from "@prisma/client";
 import { formatCurrency } from "@/lib/loanUtils";
 import { 
   updateUserRole, 

@@ -18,7 +18,7 @@ import {
   Check,
   X
 } from "lucide-react";
-import { ContributionType, ContributionStatus, PaymentMethod, Role } from "@/generated/prisma";
+import { ContributionType, ContributionStatus, PaymentMethod, Role } from "@prisma/client";
 import { formatCurrency } from "@/lib/loanUtils";
 import { makeContribution, approveContribution, rejectContribution } from "@/app/contributions/actions";
 

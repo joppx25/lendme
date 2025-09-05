@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getCurrentSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
-import { ContributionType, ContributionStatus, PaymentMethod } from "@/generated/prisma";
+import { ContributionType, ContributionStatus, PaymentMethod } from "@prisma/client";
 
 const contributionSchema = z.object({
   amount: z.string().transform((val) => parseFloat(val)).pipe(

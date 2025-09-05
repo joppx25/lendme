@@ -16,7 +16,7 @@ import {
   User,
   AlertCircle
 } from "lucide-react";
-import { LoanType, LoanStatus, Role } from "@/generated/prisma";
+import { LoanType, LoanStatus, Role } from "@prisma/client";
 import { formatCurrency, getInterestRateByType, getMaxAmountByType, getMaxTermByType, calculateSimpleInterestLoan } from "@/lib/loanUtils";
 import { createLoanForUser, updateLoan, deleteLoan, getUsersForLoanCreation } from "@/app/loans/crud-actions";
 

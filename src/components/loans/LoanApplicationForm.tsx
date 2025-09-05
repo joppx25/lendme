@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Calculator, FileText, Loader2, Upload, X } from "lucide-react";
 import { applyForLoan } from "@/app/loans/actions";
-import { LoanType } from "@/generated/prisma";
+import { LoanType } from "@prisma/client";
 import { calculateSimpleInterestLoan, getInterestRateByType, getMaxAmountByType, getMaxTermByType, formatCurrency } from "@/lib/loanUtils";
 
 const loanTypes = [

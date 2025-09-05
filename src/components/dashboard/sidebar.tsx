@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Home, Users, DollarSign, BarChart, Settings, CreditCard, PiggyBank } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
-import { Role } from "@/generated/prisma";
+import { Role } from "@prisma/client";
 
 interface MenuItem {
   href: string;
