@@ -2,12 +2,13 @@ import LoginForm from '@/components/login-form';
 import { Suspense } from 'react'
 
 interface LoginPageProps {
-  searchParams: { message?: string | undefined }
+  searchParams: Promise<{ message?: string | undefined }>
 }
  
-export default function LoginPage({
+export default async function LoginPage({
   searchParams,
 }: LoginPageProps) {
+  const params = await searchParams;
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -16,9 +17,9 @@ export default function LoginPage({
             Lending App
           </div>
         </div>
-        {searchParams.message && (
+        {params.message && (
           <div className="mb-4 p-3 bg-green-800 border border-green-600 rounded-lg text-green-200 text-sm text-center">
-            {searchParams.message}
+            {params.message}
           </div>
         )}
         <Suspense fallback={<div className="text-white text-center">Loading...</div>}>
