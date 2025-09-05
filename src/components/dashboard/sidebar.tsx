@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { Home, Users, DollarSign, BarChart, Settings, CreditCard, PiggyBank, User } from "lucide-react";
+import { Home, Users, DollarSign, BarChart, Settings, CreditCard, PiggyBank } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { Role } from "@/generated/prisma";
 

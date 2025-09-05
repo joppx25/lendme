@@ -23,7 +23,19 @@ const profileUpdateSchema = z.object({
   }, { message: "You must be at least 18 years old" }),
 });
 
-export async function updateProfile(state: any, formData: FormData) {
+interface ProfileUpdateState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    name?: string[];
+    email?: string[];
+    phoneNo?: string[];
+    address?: string[];
+    dob?: string[];
+  };
+}
+
+export async function updateProfile(state: ProfileUpdateState, formData: FormData) {
   try {
     const currentUser = await getCurrentSession();
     

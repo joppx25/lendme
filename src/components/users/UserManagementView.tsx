@@ -96,6 +96,42 @@ interface UserManagementViewProps {
   currentUserRole: Role;
 }
 
+interface UserUpdateState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    userId?: string[];
+    role?: string[];
+    status?: string[];
+  };
+}
+
+interface UserStatusState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    userId?: string[];
+    status?: string[];
+  };
+}
+
+interface CreateUserState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    name?: string[];
+    email?: string[];
+  };
+}
+
+interface ResetUserPasswordState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    newPassword?: string[];
+  };
+}
+
 export function UserManagementView({ 
   users, 
   statistics, 
@@ -110,9 +146,9 @@ export function UserManagementView({
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState<'none' | 'create' | 'edit' | 'view' | 'delete' | 'reset'>('none');
   
-  const [updateState, updateAction, updatePending] = useActionState(updateUserRole, { success: false, message: '' });
-  const [statusState, statusAction, statusPending] = useActionState(updateUserStatus, { success: false, message: '' });
-  const [createState, createAction, createPending] = useActionState(createUser, { success: false, message: '' });
+  const [updateState, updateAction, updatePending] = useActionState<UserUpdateState, FormData>(updateUserRole, { success: false, message: '' });
+  const [statusState, statusAction, statusPending] = useActionState<UserStatusState, FormData>(updateUserStatus, { success: false, message: '' });
+  const [createState, createAction, createPending] = useActionState<CreateUserState, FormData>(createUser, { success: false, message: '' });
   const [resetState, resetAction, resetPending] = useActionState(resetUserPassword, { success: false, message: '' });
 
   const [openCalendar, setOpenCalendar] = useState(false);
@@ -191,17 +227,18 @@ export function UserManagementView({
 
   // Calculate user statistics
   const totalUsers = users.length;
-  const totalBorrowers = users.filter(u => u.role === 'BORROWER').length;
-  const totalManagers = users.filter(u => u.role === 'MANAGER').length;
+  // const totalBorrowers = users.filter(u => u.role === 'BORROWER').length;
+  // const totalManagers = users.filter(u => u.role === 'MANAGER').length;
   const suspendedUsers = users.filter(u => u.status === 'BLOCKED').length;
 
   // Calculate financial statistics for users
-  const totalLoanAmount = users.reduce((sum, user) => 
-    sum + user.loans.reduce((userSum, loan) => userSum + loan.principalAmount, 0), 0
-  );
-  const totalContributionAmount = users.reduce((sum, user) => 
-    sum + user.contributions.reduce((userSum, contribution) => userSum + contribution.amount, 0), 0
-  );
+  // const totalLoanAmount = users.reduce((sum, user) => 
+  //   sum + user.loans.reduce((userSum, loan) => userSum + loan.principalAmount, 0), 0
+  // );
+
+  // const totalContributionAmount = users.reduce((sum, user) => 
+  //   sum + user.contributions.reduce((userSum, contribution) => userSum + contribution.amount, 0), 0
+  // );
 
   // Handle successful actions with useEffect to prevent re-render loops
   React.useEffect(() => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useActionState, useEffect } from "react";
+import { useActionState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,9 +17,21 @@ interface ProfileEditFormProps {
   onSuccess: () => void;
 }
 
+interface ProfileUpdateState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    name?: string[];
+    email?: string[];
+    phoneNo?: string[];
+    address?: string[];
+    dob?: string[];
+  };
+}
+
 export function ProfileEditForm({ user, onCancel, onSuccess }: ProfileEditFormProps) {
   const { setUser } = useAuthStore();
-  const [state, formAction, pending] = useActionState(updateProfile, { success: false, message: '' });
+  const [state, formAction, pending] = useActionState<ProfileUpdateState, FormData>(updateProfile, { success: false, message: '' });
 
   const getUserInitials = (name: string) => {
     return name

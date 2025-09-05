@@ -9,8 +9,7 @@ import {
   Download, 
   Eye, 
   Image, 
-  File,
-  ExternalLink
+  File
 } from "lucide-react";
 
 interface UploadedFile {
@@ -28,7 +27,6 @@ interface RequirementFilesViewProps {
 }
 
 export function RequirementFilesView({ files, loanNumber, borrowerName }: RequirementFilesViewProps) {
-  const [isOpen, setIsOpen] = useState(false);
 
   if (!files || files.length === 0) {
     return (

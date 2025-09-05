@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { 
   Plus,
   Edit2,
@@ -150,7 +149,7 @@ export function CreateLoanModal({ isOpen, onClose, onSuccess }: CreateLoanModalP
                 <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-md">
                   <p className="text-sm text-yellow-800 font-medium">No eligible users found</p>
                   <p className="text-xs text-yellow-600 mt-1">
-                    This could be because all users already have active loans, or they don't have the right status/role.
+                    This could be because all users already have active loans, or they don&apos;t have the right status/role.
                   </p>
                 </div>
               ) : (
@@ -719,7 +718,7 @@ export function DeleteLoanButton({ loan, onSuccess }: DeleteLoanButtonProps) {
         alert(result.message);
       }
     } catch (error) {
-      alert('Failed to delete loan');
+      alert(`Failed to delete loan, ${error}`);
     } finally {
       setDeleting(false);
       setShowConfirm(false);

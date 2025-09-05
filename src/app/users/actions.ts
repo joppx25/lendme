@@ -7,6 +7,16 @@ import { revalidatePath } from "next/cache";
 import { Role, Status } from "@/generated/prisma";
 import { generateSalt, hashPassword } from "@/app/auth/core/hasher";
 
+interface UserUpdateState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    userId?: string[];
+    role?: string[];
+    status?: string[];
+  };
+}
+
 const userUpdateSchema = z.object({
   userId: z.string(),
   role: z.enum(['SUPERADMIN', 'MANAGER', 'BORROWER', 'GUEST']),
@@ -33,7 +43,21 @@ const userStatusSchema = z.object({
   reason: z.string().optional(),
 });
 
-export async function updateUserRole(state: any, formData: FormData) {
+interface CreateUserState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    name?: string[];
+    email?: string[];
+    phoneNo?: string[];
+    address?: string[];
+    role?: string[];
+    password?: string[];
+    dob?: string[];
+  };
+}
+
+export async function updateUserRole(state: UserUpdateState, formData: FormData) {
   try {
     const currentUser = await getCurrentSession();
     
@@ -120,7 +144,16 @@ export async function updateUserRole(state: any, formData: FormData) {
   }
 }
 
-export async function updateUserStatus(state: any, formData: FormData) {
+interface UserStatusState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    userId?: string[];
+    status?: string[];
+  };
+}
+
+export async function updateUserStatus(state: UserStatusState, formData: FormData) {
   try {
     const currentUser = await getCurrentSession();
     
@@ -134,7 +167,6 @@ export async function updateUserStatus(state: any, formData: FormData) {
     const validatedFields = userStatusSchema.safeParse({
       userId: formData.get('userId'),
       status: formData.get('status'),
-      reason: formData.get('reason'),
     });
 
     if (!validatedFields.success) {
@@ -144,7 +176,7 @@ export async function updateUserStatus(state: any, formData: FormData) {
       };
     }
 
-    const { userId, status, reason } = validatedFields.data;
+    const { userId, status } = validatedFields.data;
 
     // Check if user exists
     const targetUser = await prisma.users.findUnique({
@@ -198,7 +230,7 @@ export async function updateUserStatus(state: any, formData: FormData) {
   }
 }
 
-export async function createUser(state: any, formData: FormData) {
+export async function createUser(state: CreateUserState, formData: FormData) {
   try {
     const currentUser = await getCurrentSession();
     
@@ -376,7 +408,15 @@ export async function getUserActivity(userId: string) {
   }
 }
 
-export async function resetUserPassword(state: any, formData: FormData) {
+interface ResetUserPasswordState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    newPassword?: string[];
+  };
+}
+
+export async function resetUserPassword(state: ResetUserPasswordState, formData: FormData) {
   try {
     const currentUser = await getCurrentSession();
     

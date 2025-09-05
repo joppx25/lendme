@@ -3,22 +3,20 @@
 import { login } from '@/app/login/actions';
 import { useState, useActionState } from 'react';
 
+interface LoginState {
+  success: boolean;
+  errors?: {
+    email?: string[];
+    password?: string[];
+  };
+  message?: string;
+}
+
 export default function SimpleLoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [state, formAction, pending] = useActionState(login, { success: false, message: '' });
-
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   setIsLoading(true);
-    
-  //   // Simulate API call
-  //   setTimeout(() => {
-  //     console.log('Login attempt:', { email, password });
-  //     setIsLoading(false);
-  //   }, 1000);
-  // };
+  const [state, formAction, pending] = useActionState<LoginState, FormData>(login, { success: false, message: '' });
 
   return (
     <div className="w-full max-w-md mx-auto">
@@ -101,7 +99,7 @@ export default function SimpleLoginForm() {
 
         <div className="mt-8 text-center">
           <p className="text-gray-400 text-sm">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <a href="#" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
               Contact administrator
             </a>

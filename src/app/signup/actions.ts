@@ -101,7 +101,7 @@ export async function signup(state: SignupState, formData: FormData) {
     } catch (error) {
         return {
             success: false,
-            message: "Failed to create user",
+            message: `Failed to create user, ${error}`,
             errors: {}
         }
     }

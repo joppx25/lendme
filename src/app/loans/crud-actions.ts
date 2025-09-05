@@ -313,9 +313,6 @@ export async function updateLoan(state: UpdateLoanState, formData: FormData) {
 
     const validatedFields = updateLoanSchema.safeParse({
       loanId: formData.get('loanId'),
-      loanType: formData.get('loanType'),
-      principalAmount: formData.get('principalAmount'),
-      termMonths: formData.get('termMonths'),
       purpose: formData.get('purpose'),
       collateral: formData.get('collateral'),
       status: formData.get('status'),
@@ -415,7 +412,7 @@ export async function updateLoan(state: UpdateLoanState, formData: FormData) {
       updatePayload.totalAmount = totalAmount;
       updatePayload.remainingBalance = totalAmount;
     }
-
+    console.log('updatePayload', updatePayload);
     // Update the loan
     await prisma.loans.update({
       where: { id: loanId },

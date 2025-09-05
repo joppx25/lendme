@@ -13,7 +13,16 @@ const loginSchema = z.object({
     password: z.string('Password is required').min(6, 'Password must be at least 6 characters'),
 });
 
-export async function login(state: any, formData: FormData) {
+interface LoginState {
+    success: boolean;
+    errors?: {
+        email?: string[];
+        password?: string[];
+    };
+    message?: string;
+}
+
+export async function login(state: LoginState, formData: FormData) {
     const validatedField = loginSchema.safeParse(Object.fromEntries(formData));
 
     if (!validatedField.success) {

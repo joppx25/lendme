@@ -3,11 +3,11 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Calendar, DollarSign, Clock, FileText, CreditCard } from "lucide-react";
 import { LoanStatus, LoanType } from "@/generated/prisma";
-import { formatCurrency, decimalToNumber } from "@/lib/loanUtils";
+import { formatCurrency } from "@/lib/loanUtils";
 import { RequirementFilesView } from "./RequirementFilesView";
+import { UploadedFile } from "@/lib/fileUpload";
 
 interface Loan {
   id: string;
@@ -22,7 +22,7 @@ interface Loan {
   status: LoanStatus;
   purpose: string;
   collateral?: string | null;
-  requirementFiles?: any;
+  requirementFiles?: UploadedFile[];
   startDate?: Date | null;
   endDate?: Date | null;
   requestedAt: Date;
@@ -101,7 +101,7 @@ export function MyLoansView({ loans }: MyLoansViewProps) {
           <CreditCard className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <h3 className="text-lg font-semibold mb-2">No Loans Yet</h3>
           <p className="text-muted-foreground mb-4">
-            You haven't applied for any loans yet. Start your loan application today.
+            You haven&apos;t applied for any loans yet. Start your loan application today.
           </p>
           <Button asChild>
             <a href="/apply-loan">Apply for Your First Loan</a>
@@ -337,7 +337,7 @@ export function MyLoansView({ loans }: MyLoansViewProps) {
 
                 {/* Requirement Files */}
                 <RequirementFilesView 
-                  files={loan.requirementFiles ? JSON.parse(loan.requirementFiles as string) : null}
+                  files={loan.requirementFiles ? JSON.parse(loan.requirementFiles as unknown as string) as UploadedFile[] : null}
                   loanNumber={loan.loanNumber}
                   borrowerName="You"
                 />

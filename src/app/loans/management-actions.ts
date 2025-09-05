@@ -10,10 +10,23 @@ import { calculateLoanPayment, decimalToNumber } from "@/lib/loanUtils";
 const loanApprovalSchema = z.object({
   loanId: z.string(),
   action: z.enum(['approve', 'reject']),
-  rejectionReason: z.string().optional(),
+  rejectionReason: z.string().nullable(),
 });
 
-export async function manageLoan(state: any, formData: FormData) {
+interface LoanApprovalState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    loanId?: string[];
+  };
+}
+
+export async function manageLoan(state: LoanApprovalState, formData: FormData) {
+  let loanReturn = {
+    success: false,
+    message: "",
+  };
+
   try {
     const currentUser = await getCurrentSession();
     
@@ -29,7 +42,8 @@ export async function manageLoan(state: any, formData: FormData) {
       action: formData.get('action'),
       rejectionReason: formData.get('rejectionReason'),
     });
-
+    console.log('validatedFields', validatedFields);
+    console.log('formData', formData);
     if (!validatedFields.success) {
       return {
         success: false,
@@ -74,7 +88,7 @@ export async function manageLoan(state: any, formData: FormData) {
       }
 
       // Approve the loan
-      const approvedLoan = await prisma.loans.update({
+      await prisma.loans.update({
         where: { id: loanId },
         data: {
           status: LoanStatus.APPROVED,
@@ -129,8 +143,7 @@ export async function manageLoan(state: any, formData: FormData) {
         });
       }
 
-      revalidatePath('/loans');
-      return {
+      loanReturn = {
         success: true,
         message: `Loan ${loan.loanNumber} approved successfully for ${loan.borrower.name}`,
       };
@@ -155,17 +168,11 @@ export async function manageLoan(state: any, formData: FormData) {
         },
       });
 
-      revalidatePath('/loans');
-      return {
+      loanReturn = {
         success: true,
         message: `Loan ${loan.loanNumber} rejected`,
       };
     }
-
-    return {
-      success: false,
-      message: "Invalid action",
-    };
 
   } catch (error) {
     console.error('Loan management error:', error);
@@ -174,6 +181,9 @@ export async function manageLoan(state: any, formData: FormData) {
       message: "Failed to process loan action",
     };
   }
+
+  revalidatePath('/loans');
+  return loanReturn;
 }
 
 export async function setLoanUnderReview(loanId: string) {

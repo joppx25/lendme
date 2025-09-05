@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Calculator, DollarSign, Calendar, FileText, Loader2, Upload, X, File } from "lucide-react";
+import { Calculator, FileText, Loader2, Upload, X } from "lucide-react";
 import { applyForLoan } from "@/app/loans/actions";
 import { LoanType } from "@/generated/prisma";
 import { calculateSimpleInterestLoan, getInterestRateByType, getMaxAmountByType, getMaxTermByType, formatCurrency } from "@/lib/loanUtils";
@@ -198,7 +198,7 @@ export function LoanApplicationForm() {
           <CardContent>
             <form action={(formData) => {
               // Add uploaded files to FormData
-              uploadedFiles.forEach((file, index) => {
+              uploadedFiles.forEach((file) => {
                 formData.append('requirements', file);
               });
               formAction(formData);

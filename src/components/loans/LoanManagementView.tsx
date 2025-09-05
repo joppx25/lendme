@@ -12,12 +12,8 @@ import {
   FileText,
   DollarSign,
   Clock,
-  CheckCircle,
-  XCircle,
-  AlertTriangle,
   TrendingUp,
   Users,
-  Calendar,
   Eye,
   Check,
   X,
@@ -25,14 +21,20 @@ import {
   Filter,
   Search,
   Plus,
-  Edit2,
-  Trash2
 } from "lucide-react";
-import { LoanStatus, LoanType, PaymentStatus, Role } from "@/generated/prisma";
+import { LoanStatus, LoanType, Role } from "@/generated/prisma";
 import { formatCurrency } from "@/lib/loanUtils";
 import { manageLoan, setLoanUnderReview } from "@/app/loans/management-actions";
 import { RequirementFilesView } from "./RequirementFilesView";
 import { CreateLoanModal, EditLoanModal, LoanActions } from "./LoanCRUDComponents";
+
+interface UploadedFile {
+  filename: string;
+  originalName: string;
+  size: number;
+  mimeType: string;
+  path: string;
+}
 
 interface LoanData {
   id: string;
@@ -60,7 +62,7 @@ interface LoanData {
   status: LoanStatus;
   purpose: string;
   collateral?: string | null;
-  requirementFiles?: any;
+  requirementFiles?: UploadedFile[];
   startDate?: Date | null;
   endDate?: Date | null;
   requestedAt: Date;
@@ -95,11 +97,20 @@ interface FundBalance {
   lastUpdated: Date;
 }
 
+interface LoanApprovalState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    loanId?: string[];
+    rejectionReason?: string[];
+  };
+}
+
 interface LoanManagementViewProps {
   loans: LoanData[];
-  statistics: LoanStatistic[];
+  statistics?: LoanStatistic[];
   fundBalance?: FundBalance | null;
-  currentUserId: string;
+  currentUserId?: string;
   currentUserRole?: Role;
 }
 
@@ -112,7 +123,7 @@ export function LoanManagementView({ loans, statistics, fundBalance, currentUser
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingLoan, setEditingLoan] = useState<LoanData | null>(null);
-  const [state, formAction, pending] = useActionState(manageLoan, { success: false, message: '' });
+  const [state, formAction, pending] = useActionState<LoanApprovalState, FormData>(manageLoan, { success: false, message: '' });
 
   const getStatusColor = (status: LoanStatus) => {
     switch (status) {
@@ -513,7 +524,7 @@ export function LoanManagementView({ loans, statistics, fundBalance, currentUser
 
                   {/* Requirement Files */}
                   <RequirementFilesView 
-                    files={loan.requirementFiles ? JSON.parse(loan.requirementFiles as string) : null}
+                    files={loan.requirementFiles ? JSON.parse(loan.requirementFiles as unknown as string) as UploadedFile[] : null}
                     loanNumber={loan.loanNumber}
                     borrowerName={loan.borrower.name}
                   />
