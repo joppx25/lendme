@@ -40,6 +40,7 @@ export default async function MyLoansPage() {
     monthlyPayment: decimalToNumber(loan.monthlyPayment),
     totalAmount: decimalToNumber(loan.totalAmount),
     remainingBalance: decimalToNumber(loan.remainingBalance),
+    requirementFiles: loan.requirementFiles ? JSON.parse(loan.requirementFiles as string) : undefined,
     payments: loan.payments.map(payment => ({
       ...payment,
       scheduledAmount: decimalToNumber(payment.scheduledAmount),
