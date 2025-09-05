@@ -36,8 +36,13 @@ export default async function middleware(req: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
     }
 
-    // Allow unauthenticated users to access auth pages and home page
-    if (!isAuthenticated && (pathname.startsWith('/login') || pathname.startsWith('/signup') || pathname === '/')) {
+    // Redirect root path to login for unauthenticated users
+    if (!isAuthenticated && pathname === '/') {
+        return NextResponse.redirect(new URL('/login', req.url));
+    }
+
+    // Allow unauthenticated users to access auth pages only
+    if (!isAuthenticated && (pathname.startsWith('/login') || pathname.startsWith('/signup'))) {
         return NextResponse.next();
     }
 
