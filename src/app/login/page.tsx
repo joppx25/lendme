@@ -1,11 +1,13 @@
 import LoginForm from '@/components/login-form';
 import { Suspense } from 'react'
+
+interface LoginPageProps {
+  searchParams: { message?: string }
+}
  
 export default function LoginPage({
   searchParams,
-}: {
-  searchParams: { message?: string }
-}) {
+}: LoginPageProps) {
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-900 to-gray-800 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
