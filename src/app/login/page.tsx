@@ -2,7 +2,7 @@ import LoginForm from '@/components/login-form';
 import { Suspense } from 'react'
 
 interface LoginPageProps {
-  searchParams: { message?: string }
+  searchParams: { message?: string | undefined }
 }
  
 export default function LoginPage({
