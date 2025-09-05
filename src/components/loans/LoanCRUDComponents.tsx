@@ -75,6 +75,14 @@ const loanStatuses = [
   { value: LoanStatus.CANCELLED, label: "Cancelled" },
 ];
 
+interface CreateLoanState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    borrowerId?: string[];
+  };
+}
+
 interface CreateLoanModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -82,7 +90,7 @@ interface CreateLoanModalProps {
 }
 
 export function CreateLoanModal({ isOpen, onClose, onSuccess }: CreateLoanModalProps) {
-  const [state, formAction, pending] = useActionState(createLoanForUser, { success: false, message: '' });
+  const [state, formAction, pending] = useActionState<CreateLoanState, FormData>(createLoanForUser, { success: false, message: '' });
   const [selectedLoanType, setSelectedLoanType] = useState<LoanType>(LoanType.PERSONAL);
   const [principalAmount, setPrincipalAmount] = useState('');
   const [termMonths, setTermMonths] = useState('');
@@ -399,6 +407,14 @@ export function CreateLoanModal({ isOpen, onClose, onSuccess }: CreateLoanModalP
   );
 }
 
+interface UpdateLoanState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    loanId?: string[];
+  };
+}
+
 interface EditLoanModalProps {
   loan: LoanData;
   isOpen: boolean;
@@ -407,7 +423,7 @@ interface EditLoanModalProps {
 }
 
 export function EditLoanModal({ loan, isOpen, onClose, onSuccess }: EditLoanModalProps) {
-  const [state, formAction, pending] = useActionState(updateLoan, { success: false, message: '' });
+  const [state, formAction, pending] = useActionState<UpdateLoanState, FormData>(updateLoan, { success: false, message: '' });
   const [editAmount, setEditAmount] = useState(loan.principalAmount.toString());
   const [editTerm, setEditTerm] = useState(loan.termMonths.toString());
   const [editLoanType, setEditLoanType] = useState(loan.loanType);

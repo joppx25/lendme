@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Calculator, DollarSign, Calendar, FileText, Loader2, Upload, X, File } from "lucide-react";
 import { applyForLoan } from "@/app/loans/actions";
@@ -52,12 +51,26 @@ const loanTypes = [
   },
 ];
 
+interface LoanApplicationState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    principalAmount?: string[];
+  };
+}
+
+interface LoanCalculation {
+  monthlyPayment: number;
+  totalAmount: number;
+  totalInterest: number;
+}
+
 export function LoanApplicationForm() {
-  const [state, formAction, pending] = useActionState(applyForLoan, { success: false, message: '' });
+  const [state, formAction, pending] = useActionState<LoanApplicationState, FormData>(applyForLoan, { success: false, message: '' });
   const [selectedLoanType, setSelectedLoanType] = useState<LoanType | null>(null);
   const [amount, setAmount] = useState<string>('');
   const [term, setTerm] = useState<string>('');
-  const [calculation, setCalculation] = useState<any>(null);
+  const [calculation, setCalculation] = useState<LoanCalculation | null>(null);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
   // Calculate loan details when inputs change

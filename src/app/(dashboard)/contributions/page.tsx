@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { decimalToNumber } from "@/lib/loanUtils";
 import { getContributionUsers } from "@/app/contributions/actions";
+import { Role } from "@/generated/prisma";
 
 export default async function ContributionsPage() {
   const currentUser = await getCurrentSession();
@@ -19,7 +20,7 @@ export default async function ContributionsPage() {
     id: string;
     name: string;
     email: string;
-    role: any;
+    role: Role;
   }> = [];
 
   if (['SUPERADMIN', 'MANAGER'].includes(currentUser.role)) {

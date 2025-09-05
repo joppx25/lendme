@@ -23,7 +23,20 @@ const signupSchema = z.object({
     address: z.string('Address is required').min(10, 'Address must be at least 10 characters'),
 })
 
-export async function signup(state: any,formData: FormData) {
+interface SignupState {
+    success: boolean;
+    errors?: {
+        name?: string[];
+        email?: string[];
+        password?: string[];
+        address?: string[];
+        phoneNo?: string[];
+        dob?: string[];
+    };
+    message?: string;
+}
+
+export async function signup(state: SignupState, formData: FormData) {
 
     try {
         const validatedField = signupSchema.safeParse({
@@ -56,7 +69,7 @@ export async function signup(state: any,formData: FormData) {
             return {
                 success: false,
                 errors: {
-                    email: "Email already exists",
+                    email: ["Email already exists"],
                 }
             }
         }
@@ -84,16 +97,16 @@ export async function signup(state: any,formData: FormData) {
                 message: "Failed to create user",
             }
         }
-
-        // Redirect to login page after successful registration
-        revalidatePath('/login');
-        redirect('/login?message=Account created successfully. Please log in.');
     
     } catch (error) {
         return {
             success: false,
             message: "Failed to create user",
-            errors: error instanceof Error ? error.message : error
+            errors: {}
         }
     }
+
+    // Redirect to login page after successful registration
+    revalidatePath('/login');
+    redirect('/login?message=Account created successfully. Please log in.');
 }

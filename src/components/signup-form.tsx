@@ -13,6 +13,19 @@ import {
 } from "@/components/ui/popover"
 import { toast } from 'sonner';
 
+interface SignupState {
+  success: boolean;
+  errors?: {
+    name?: string[];
+    email?: string[];
+    password?: string[];
+    address?: string[];
+    phoneNo?: string[];
+    dob?: string[];
+  };
+  message?: string;
+}
+
 export default function SignupForm() {
   const router = useRouter();
   
@@ -23,7 +36,11 @@ export default function SignupForm() {
   const [phoneNo, setPhoneNo] = useState('');
   const [dob, setDob] = useState<Date | undefined>(new Date())
   const [isLoading, setIsLoading] = useState(false);
-  const [state, formAction, pending] = useActionState(signup, { success: false, errors: {}, message: '' });
+  const [state, formAction, pending] = useActionState<SignupState, FormData>(signup, { 
+    success: false, 
+    errors: {}, 
+    message: '' 
+  });
   const [openCalendar, setOpenCalendar] = useState(false);
 
   useEffect(() => {
@@ -58,7 +75,7 @@ export default function SignupForm() {
               disabled={isLoading}
             />
             {state?.errors?.name && (
-              <p className="text-red-500">{state.errors.name}</p>
+              <p className="text-red-500">{state.errors.name[0]}</p>
             )}
           </div>
 
@@ -77,7 +94,7 @@ export default function SignupForm() {
               disabled={isLoading}
             />
             {state?.errors?.email && (
-              <p className='text-red-500'>{state.errors.email}</p>
+              <p className='text-red-500'>{state.errors.email[0]}</p>
             )}
           </div>
 
@@ -97,7 +114,7 @@ export default function SignupForm() {
               disabled={isLoading}
             />
             {state?.errors?.password && (
-              <p className='text-red-500'>{state.errors.password}</p>
+              <p className='text-red-500'>{state.errors.password[0]}</p>
             )}
           </div>
 
@@ -116,7 +133,7 @@ export default function SignupForm() {
               disabled={isLoading}
             />
             {state?.errors?.address && (
-              <p className='text-red-500'>{state.errors.address}</p>
+              <p className='text-red-500'>{state.errors.address[0]}</p>
             )}
           </div>
 
@@ -135,7 +152,7 @@ export default function SignupForm() {
               disabled={isLoading}
             />
             {state?.errors?.phoneNo && (
-              <p className='text-red-500'>{state.errors.phoneNo}</p>
+              <p className='text-red-500'>{state.errors.phoneNo[0]}</p>
             )}
           </div>
 
@@ -174,7 +191,7 @@ export default function SignupForm() {
               />
             </div>
             {state?.errors?.dob && (
-              <p className='text-red-500'>{state.errors.dob}</p>
+              <p className='text-red-500'>{state.errors.dob[0]}</p>
             )}
           </div>
 

@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getCurrentSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { LoanType, LoanStatus } from "@/generated/prisma";
 import { 
   calculateSimpleInterestLoan, 
@@ -13,7 +12,7 @@ import {
   getMaxAmountByType, 
   getMaxTermByType 
 } from "@/lib/loanUtils";
-import { saveUploadedFiles, validateFile } from "@/lib/fileUpload";
+import { saveUploadedFiles, validateFile, UploadedFile } from "@/lib/fileUpload";
 
 const loanApplicationSchema = z.object({
   loanType: z.nativeEnum(LoanType),
@@ -27,7 +26,15 @@ const loanApplicationSchema = z.object({
   collateral: z.string().optional(),
 });
 
-export async function applyForLoan(state: any, formData: FormData) {
+interface LoanApplicationState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    principalAmount?: string[];
+  };
+}
+
+export async function applyForLoan(state: LoanApplicationState, formData: FormData) {
   try {
     const currentUser = await getCurrentSession();
     
@@ -103,7 +110,7 @@ export async function applyForLoan(state: any, formData: FormData) {
 
     // Handle file uploads
     const files = formData.getAll('requirements') as File[];
-    let uploadedFiles: any[] = [];
+    let uploadedFiles: UploadedFile[] = [];
     
     if (files && files.length > 0) {
       // Filter out empty files
@@ -191,7 +198,7 @@ export async function approveLoan(loanId: string, approverId: string) {
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + (existingLoan?.termMonths || 0));
 
-    const loan = await prisma.loans.update({
+    await prisma.loans.update({
       where: { id: loanId },
       data: {
         status: LoanStatus.APPROVED,

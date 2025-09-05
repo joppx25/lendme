@@ -17,7 +17,15 @@ const contributionSchema = z.object({
   contributorId: z.string().optional(), // For admin-created contributions
 });
 
-export async function makeContribution(state: any, formData: FormData) {
+interface ContributionState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    contributorId?: string[];
+  };
+}
+
+export async function makeContribution(state: ContributionState, formData: FormData) {
   try {
     const currentUser = await getCurrentSession();
     

@@ -106,9 +106,17 @@ const paymentMethods = [
   { value: PaymentMethod.ONLINE_BANKING, label: "Online Banking" },
 ];
 
+interface ContributionState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    contributorId?: string[];
+  };
+}
+
 export function ContributionsView({ contributions, fundBalance, userRole, availableUsers = [] }: ContributionsViewProps) {
   const [showForm, setShowForm] = useState(false);
-  const [state, formAction, pending] = useActionState(makeContribution, { success: false, message: '' });
+  const [state, formAction, pending] = useActionState<ContributionState, FormData>(makeContribution, { success: false, message: '' });
 
   const getStatusColor = (status: ContributionStatus) => {
     switch (status) {

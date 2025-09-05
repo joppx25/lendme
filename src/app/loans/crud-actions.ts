@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getCurrentSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
-import { LoanType, LoanStatus } from "@/generated/prisma";
+import { LoanType, LoanStatus, loans, Prisma } from "@/generated/prisma";
 import { 
   calculateSimpleInterestLoan, 
   generateLoanNumber, 
@@ -12,6 +12,7 @@ import {
   getMaxAmountByType,
   getMaxTermByType
 } from "@/lib/loanUtils";
+import { User } from "@/store/authStore";
 
 // Schema for creating a loan (by superadmin/manager for any user)
 const createLoanSchema = z.object({
@@ -44,7 +45,7 @@ const updateLoanSchema = z.object({
 });
 
 // Helper function to check if user can manage a specific loan
-async function canManageLoan(currentUser: any, loan: any): Promise<boolean> {
+async function canManageLoan(currentUser: User, loan: loans): Promise<boolean> {
   // Superadmin can manage all loans
   if (currentUser.role === 'SUPERADMIN') {
     return true;
@@ -68,7 +69,15 @@ async function canManageLoan(currentUser: any, loan: any): Promise<boolean> {
   return false;
 }
 
-export async function createLoanForUser(state: any, formData: FormData) {
+interface CreateLoanState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    borrowerId?: string[];
+  };
+}
+
+export async function createLoanForUser(state: CreateLoanState, formData: FormData) {
   try {
     const currentUser = await getCurrentSession();
     
@@ -269,7 +278,29 @@ export async function createLoanForUser(state: any, formData: FormData) {
   }
 }
 
-export async function updateLoan(state: any, formData: FormData) {
+interface UpdateLoanState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    loanId?: string[];
+  };
+}
+
+interface UpdateLoanPayload {
+  borrowerId?: string;
+  loanType?: LoanType;
+  purpose?: string;
+  collateral?: string;
+  principalAmount?: number;
+  termMonths?: number;
+  interestRate?: number;
+  status?: LoanStatus;
+  monthlyPayment?: number;
+  totalAmount?: number;
+  remainingBalance?: number;
+}
+
+export async function updateLoan(state: UpdateLoanState, formData: FormData) {
   try {
     const currentUser = await getCurrentSession();
     
@@ -334,7 +365,7 @@ export async function updateLoan(state: any, formData: FormData) {
     }
 
     // Prepare update data
-    const updatePayload: any = {};
+    const updatePayload: UpdateLoanPayload = {};
     
     if (updateData.purpose) updatePayload.purpose = updateData.purpose;
     if (updateData.collateral !== undefined) updatePayload.collateral = updateData.collateral;
@@ -386,7 +417,7 @@ export async function updateLoan(state: any, formData: FormData) {
     }
 
     // Update the loan
-    const updatedLoan = await prisma.loans.update({
+    await prisma.loans.update({
       where: { id: loanId },
       data: updatePayload,
     });
@@ -484,7 +515,7 @@ export async function getUsersForLoanCreation() {
     }
 
     // Get users based on role permissions
-    let whereClause: any = {
+    const whereClause: Prisma.usersWhereInput = {
       // More flexible filtering - include all statuses for now to debug
       status: {
         in: ['ACTIVE', 'PENDING'] // Include both active and pending users
