@@ -109,6 +109,11 @@ interface ContributionState {
   message?: string;
   errors?: {
     contributorId?: string[];
+    amount?: string[];
+    paymentMethod?: string[];
+    contributionType?: string[];
+    receiptNumber?: string[];
+    description?: string[];
   };
 }
 
