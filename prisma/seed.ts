@@ -1,4 +1,4 @@
-import { PrismaClient } from '../src/generated/prisma';
+import { PrismaClient, ContributionType, ContributionStatus, PaymentMethod, LoanType, LoanStatus, Status, PaymentStatus } from '../src/generated/prisma';
 import { hashPassword, generateSalt } from '../src/app/auth/core/hasher';
 
 const prisma = new PrismaClient();
@@ -121,44 +121,44 @@ async function main() {
     {
       contributorId: borrower1.id,
       amount: 10000.00,
-      contributionType: 'INITIAL_CAPITAL',
-      paymentMethod: 'BANK_TRANSFER',
+      contributionType: ContributionType.INITIAL_CAPITAL,
+      paymentMethod: PaymentMethod.BANK_TRANSFER,
       receiptNumber: 'RCP001',
       description: 'Initial capital contribution',
-      status: 'APPROVED',
+      status: ContributionStatus.APPROVED,
       contributedAt: new Date('2024-01-15'),
       processedAt: new Date('2024-01-16'),
     },
     {
       contributorId: borrower2.id,
       amount: 5000.00,
-      contributionType: 'MONTHLY_SAVINGS',
-      paymentMethod: 'GCASH',
+      contributionType: ContributionType.MONTHLY_SAVINGS,
+      paymentMethod: PaymentMethod.GCASH,
       receiptNumber: 'RCP002',
       description: 'Monthly savings contribution',
-      status: 'APPROVED',
+      status: ContributionStatus.APPROVED,
       contributedAt: new Date('2024-02-01'),
       processedAt: new Date('2024-02-01'),
     },
     {
       contributorId: borrower3.id,
       amount: 15000.00,
-      contributionType: 'VOLUNTARY',
-      paymentMethod: 'CASH',
+      contributionType: ContributionType.VOLUNTARY,
+      paymentMethod: PaymentMethod.CASH,
       receiptNumber: 'RCP003',
       description: 'Voluntary contribution for emergency fund',
-      status: 'APPROVED',
+      status: ContributionStatus.APPROVED,
       contributedAt: new Date('2024-02-15'),
       processedAt: new Date('2024-02-16'),
     },
     {
       contributorId: borrower1.id,
       amount: 3000.00,
-      contributionType: 'MONTHLY_SAVINGS',
-      paymentMethod: 'BANK_TRANSFER',
+      contributionType: ContributionType.MONTHLY_SAVINGS,
+      paymentMethod: PaymentMethod.BANK_TRANSFER,
       receiptNumber: 'RCP004',
       description: 'February monthly savings',
-      status: 'PENDING',
+      status: ContributionStatus.PENDING,
       contributedAt: new Date(),
     },
   ];
