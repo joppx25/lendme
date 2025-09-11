@@ -1,7 +1,15 @@
-import { PrismaClient, ContributionType, ContributionStatus, PaymentMethod, LoanType, LoanStatus, Status, PaymentStatus } from '../src/generated/prisma';
-import { hashPassword, generateSalt } from '../src/app/auth/core/hasher';
+import crypto from 'crypto';
+import { PrismaClient, ContributionType, ContributionStatus, PaymentMethod, LoanType, LoanStatus, PaymentStatus } from '@prisma/client';
 
 const prisma = new PrismaClient();
+
+function hashPassword(password: string, salt: string) {
+  return crypto.scryptSync(password.normalize(), salt, 64).toString('hex');
+}
+
+function generateSalt(length: number = 16) {
+  return crypto.randomBytes(length).toString('hex');
+}
 
 async function main() {
   console.log('🌱 Starting seed...');
@@ -245,8 +253,10 @@ async function main() {
   ];
 
   for (const loan of loans) {
-    await prisma.loans.create({
-      data: loan,
+    await prisma.loans.upsert({
+      where: { loanNumber: loan.loanNumber },
+      update: {},
+      create: loan,
     });
   }
 
@@ -304,8 +314,15 @@ async function main() {
     ];
 
     for (const payment of payments) {
-      await prisma.loanPayments.create({
-        data: payment,
+      await prisma.loanPayments.upsert({
+        where: {
+          loanId_paymentNumber: {
+            loanId: payment.loanId,
+            paymentNumber: payment.paymentNumber,
+          },
+        },
+        update: {},
+        create: payment,
       });
     }
   }
