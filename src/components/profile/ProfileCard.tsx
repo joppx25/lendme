@@ -76,98 +76,86 @@ export function ProfileCard({ user }: ProfileCardProps) {
   }
 
   return (
-    <Card className="w-full max-w-4xl">
-      <CardHeader className="pb-6">
+    <Card className="w-full">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-20 w-20">
+          <div className="flex items-center space-x-3">
+            <Avatar className="h-16 w-16">
               <AvatarImage src="/avatar-placeholder.png" alt={user.name} />
               <AvatarFallback className="text-lg">
                 {getUserInitials(user.name)}
               </AvatarFallback>
             </Avatar>
             <div>
-              <CardTitle className="text-2xl">{user.name}</CardTitle>
-              <CardDescription className="text-base">{user.email}</CardDescription>
-              <div className="flex items-center space-x-2 mt-2">
-                <Badge variant={getRoleBadgeVariant(user.role)}>
+              <CardTitle className="text-xl">{user.name}</CardTitle>
+              <CardDescription className="text-sm">{user.email}</CardDescription>
+              <div className="flex items-center space-x-2 mt-1">
+                <Badge variant={getRoleBadgeVariant(user.role)} className="text-xs">
                   <Shield className="w-3 h-3 mr-1" />
                   {user.role.toLowerCase()}
                 </Badge>
-                <Badge variant={getStatusBadgeVariant(user.status)}>
+                <Badge variant={getStatusBadgeVariant(user.status)} className="text-xs">
                   {user.status.toLowerCase()}
                 </Badge>
               </div>
             </div>
           </div>
-          <Button onClick={() => setIsEditing(true)}>
+          <Button onClick={() => setIsEditing(true)} size="sm">
             <Edit className="w-4 h-4 mr-2" />
-            Edit Profile
+            Edit
           </Button>
         </div>
       </CardHeader>
 
       <Separator />
 
-      <CardContent className="pt-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Contact Information</h3>
-            
+      <CardContent className="pt-4">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Personal Information</h3>
+          
+          <div className="space-y-3">
             <div className="flex items-center space-x-3">
-              <Mail className="w-5 h-5 text-muted-foreground" />
-              <div>
+              <Mail className="w-4 h-4 text-muted-foreground" />
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">Email</p>
-                <p className="text-sm text-muted-foreground">{user.email}</p>
+                <p className="text-sm text-muted-foreground truncate">{user.email}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
-              <Phone className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium">Phone Number</p>
+              <Phone className="w-4 h-4 text-muted-foreground" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Phone</p>
                 <p className="text-sm text-muted-foreground">{user.phoneNo}</p>
               </div>
             </div>
 
             <div className="flex items-start space-x-3">
-              <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
-              <div>
+              <MapPin className="w-4 h-4 text-muted-foreground mt-0.5" />
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">Address</p>
-                <p className="text-sm text-muted-foreground">{user.address}</p>
+                <p className="text-sm text-muted-foreground line-clamp-2">{user.address}</p>
               </div>
             </div>
-          </div>
 
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Personal Information</h3>
-            
             <div className="flex items-center space-x-3">
-              <Calendar className="w-5 h-5 text-muted-foreground" />
-              <div>
+              <Calendar className="w-4 h-4 text-muted-foreground" />
+              <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium">Date of Birth</p>
                 <p className="text-sm text-muted-foreground">{formatDate(user.dob)}</p>
               </div>
             </div>
 
             <div className="flex items-center space-x-3">
-              <Shield className="w-5 h-5 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium">Account Role</p>
-                <p className="text-sm text-muted-foreground capitalize">{user.role.toLowerCase()}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <div className="w-5 h-5 flex items-center justify-center">
-                <div className={`w-3 h-3 rounded-full ${
+              <div className="w-4 h-4 flex items-center justify-center">
+                <div className={`w-2.5 h-2.5 rounded-full ${
                   user.status === 'ACTIVE' ? 'bg-green-500' : 
                   user.status === 'PENDING' ? 'bg-yellow-500' : 
                   'bg-red-500'
                 }`} />
               </div>
-              <div>
-                <p className="text-sm font-medium">Account Status</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium">Status</p>
                 <p className="text-sm text-muted-foreground capitalize">{user.status.toLowerCase()}</p>
               </div>
             </div>

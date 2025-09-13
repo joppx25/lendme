@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redis } from "@/lib/redis";
 import { SESSION_COOKIE_NAME, sessionSchema } from "@/app/auth/core/auth";
 import { cookies } from "next/headers";
+import { hashPassword } from "../auth/core/hasher";
 
 const profileUpdateSchema = z.object({
   name: z.string().min(3, 'Name must be at least 3 characters'),
@@ -123,6 +124,74 @@ export async function updateProfile(state: ProfileUpdateState, formData: FormDat
     return {
       success: false,
       message: "Failed to update profile",
+    };
+  }
+}
+
+interface ChangePasswordState {
+  success: boolean;
+  message?: string;
+  errors?: {
+    newPassword?: string[];
+  };
+}
+
+
+const ChangePasswordSchema = z.object({
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+});
+
+export async function changePassword(state: ChangePasswordState, formData: FormData) {
+  try {
+    const currentUser = await getCurrentSession();
+    console.log('Form data', formData);
+    if (!currentUser) {
+      return {
+        success: false,
+        message: "Not authenticated",
+      };
+    }
+
+    const validatedFields = ChangePasswordSchema.safeParse(Object.fromEntries(formData));
+
+    if (!validatedFields.success) {
+      return {
+        success: false,
+        errors: validatedFields.error.flatten().fieldErrors,
+      };
+    }
+
+    const user = await prisma.users.findUnique({
+      where: { id: currentUser.id },
+      select: { salt: true },
+    });
+    
+    const { newPassword } = validatedFields.data;
+
+    if (!user) {
+      return {
+        success: false,
+        message: "User not found",
+      };
+    }
+
+    const hashedPassword = await hashPassword(newPassword, user.salt);
+
+    await prisma.users.update({
+      where: { id: currentUser.id },
+      data: { password: hashedPassword },
+    });
+
+    revalidatePath('/profile');
+    return {
+      success: true,
+      message: "Password changed successfully",
+    };
+  } catch (error) {
+    console.error('Change password error:', error);
+    return {
+      success: false,
+      message: "Failed to change password",
     };
   }
 }

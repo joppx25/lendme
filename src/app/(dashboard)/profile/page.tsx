@@ -1,4 +1,5 @@
 import { ProfileCard } from "@/components/profile/ProfileCard";
+import { PasswordUpdateForm } from "@/components/profile/PasswordUpdateForm";
 import { getCurrentSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
@@ -19,7 +20,10 @@ export default async function ProfilePage() {
           </p>
         </div>
         
-        <ProfileCard user={currentUser} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ProfileCard user={currentUser} />
+          <PasswordUpdateForm />
+        </div>
       </div>
     </div>
   );
