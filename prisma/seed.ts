@@ -19,7 +19,7 @@ async function main() {
   const hashedPassword = hashPassword('password123', salt);
 
   // Create Super Admin
-  const superAdmin = await prisma.users.upsert({
+  await prisma.users.upsert({
     where: { email: 'admin@lendme.com' },
     update: {},
     create: {
