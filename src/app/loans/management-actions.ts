@@ -6,6 +6,8 @@ import { getCurrentSession } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 import { LoanStatus } from "@prisma/client";
 import { calculateLoanPayment, decimalToNumber } from "@/lib/loanUtils";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 
 const loanApprovalSchema = z.object({
   loanId: z.string(),
@@ -182,8 +184,15 @@ export async function manageLoan(state: LoanApprovalState, formData: FormData) {
     };
   }
 
-  revalidatePath('/loans');
-  return loanReturn;
+  const cookieValue = JSON.stringify(loanReturn);
+  console.log('Setting cookie with value:', cookieValue);
+  (await cookies()).set('loanReturn', cookieValue, { maxAge: 5 });
+
+  redirect('/loans');
+}
+
+export async function clearLoanReturnCookie() {
+  (await cookies()).delete('loanReturn');
 }
 
 export async function setLoanUnderReview(loanId: string) {

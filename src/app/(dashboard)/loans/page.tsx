@@ -3,6 +3,9 @@ import { getCurrentSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import { decimalToNumber } from "@/lib/loanUtils";
+import { Toaster } from "@/components/ui/sonner";
+import { cookies } from "next/headers";
+import { ToastClient } from "@/app/(dashboard)/loans/ToastClient";
 
 export default async function LoansManagementPage() {
   const currentUser = await getCurrentSession();
@@ -99,6 +102,9 @@ export default async function LoansManagementPage() {
     totalRepayments: decimalToNumber(fundBalance.totalRepayments),
   } : null;
 
+  const actionReturn = (await cookies()).get('loanReturn');
+  console.log('Cookie value from page:', actionReturn?.value);
+  
   return (
     <div className="container mx-auto py-6">
       <div className="space-y-6">
@@ -110,6 +116,9 @@ export default async function LoansManagementPage() {
             </p>
           </div>
         </div>
+
+
+        <ToastClient actionReturn={actionReturn} />
         
         <LoanManagementView 
           loans={loans}
